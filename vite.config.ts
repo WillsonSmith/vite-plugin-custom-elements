@@ -46,7 +46,9 @@ const transformImportedHtmlPlugin = () => {
   };
 };
 
-const htmlPlugin = () => {
+const htmlPlugin = (
+  { rootDir }: { rootDir?: string } = { rootDir: process.cwd() },
+) => {
   return {
     name: 'html-transform',
     transformIndexHtml: async (htmlContent: string) => {
@@ -61,18 +63,19 @@ const htmlPlugin = () => {
         try {
           const { html: htmlFile, script: scriptFile } =
             await readComponentFile({
-              componentDir: './components/',
+              rootDir,
+              componentDir: 'components',
               componentName: getTagName(element),
             });
 
-          if (!htmlFile) return;
+          if (!htmlFile) continue;
 
           if (scriptFile) {
             const scriptExists = findElement(doc, (el) => {
               return (
                 getTagName(el) === 'script' &&
                 getAttribute(el, 'src') ===
-                  `./components/${getTagName(element)}/${getTagName(element)}.ts`
+                  `${rootDir}/components/${getTagName(element)}/${getTagName(element)}.ts`
               );
             });
 
@@ -80,7 +83,7 @@ const htmlPlugin = () => {
               appendChild(
                 body,
                 createElement('script', {
-                  src: `./components/${getTagName(element)}/${getTagName(element)}.ts`,
+                  src: `${rootDir}/components/${getTagName(element)}/${getTagName(element)}.ts`,
                   type: 'module',
                 }),
               );
@@ -105,26 +108,22 @@ const htmlPlugin = () => {
             insertBefore(getParentNode(element), newTag, element);
             remove(element);
           } else {
+            const newTag = createElement(getTagName(element));
+            for (const c of getChildNodes(componentMarkup)) {
+              appendChild(newTag, c);
+            }
+
             const slot = findElement(componentMarkup, findTag('slot'));
-
             if (slot) {
-              const newTag = createElement(getTagName(element));
-
-              for (const c of getChildNodes(componentMarkup)) {
-                appendChild(newTag, c);
-              }
-
               const slot = findElement(newTag, findTag('slot'));
               const children = getChildNodes(element);
               for (const child of children) {
                 insertBefore(getParentNode(slot), child, slot);
               }
-
               remove(slot);
-
-              insertBefore(getParentNode(element), newTag, element);
-              remove(element);
             }
+            insertBefore(getParentNode(element), newTag, element);
+            remove(element);
           }
         } catch (error) {
           console.log(error);
@@ -135,6 +134,7 @@ const htmlPlugin = () => {
     },
   };
 };
+
 export default defineConfig({
   build: {},
   resolve: {
@@ -147,7 +147,7 @@ export default defineConfig({
     //   fileRegex: /\.html$/,
     // }),
     transformImportedHtmlPlugin(),
-    htmlPlugin(),
+    htmlPlugin({ rootDir: `${process.cwd()}/src` }),
   ],
 });
 
@@ -166,7 +166,7 @@ function isCustomElement(tagName: string) {
 }
 
 function findTag(tagName: string) {
-  return (el) => {
+  return (el: Element) => {
     return getTagName(el) === tagName;
   };
 }
@@ -183,7 +183,9 @@ async function readComponentFile({
   rootDir = process.cwd(),
 }: ReadComponentOptions) {
   const dir = `${rootDir}/${componentDir}/${componentName}/${componentName}`;
-  const html = await readFile(dir + '.html', 'utf8').catch(() => undefined);
+  const html = await readFile(dir + '.html', 'utf8').catch((e) => {
+    return undefined;
+  });
   const script = await readFile(dir + '.ts', 'utf8').catch(() => undefined);
   return { html, script };
 }

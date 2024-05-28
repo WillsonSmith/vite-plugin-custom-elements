@@ -1,6 +1,5 @@
-import { define } from '../../../utility/define';
-
 import './x-time.html?component';
+import { define } from '@/utility/define';
 
 define(
   'x-time',
@@ -11,8 +10,13 @@ define(
   class XTime extends HTMLElement {
     private interval?: ReturnType<typeof setInterval>;
 
+    constructor() {
+      super();
+    }
+
     connectedCallback() {
       const time = this.querySelector('.time')!;
+      console.log(this, time);
       this.interval = setInterval(() => {
         const date = new Date();
         time.innerHTML = new Intl.DateTimeFormat('en-CA', {

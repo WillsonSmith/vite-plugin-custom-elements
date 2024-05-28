@@ -1,1 +1,32 @@
-<span>It is currently <span class="time"></span>.</span>
+<style>
+  @keyframes fadein {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .time:not(:empty) {
+    opacity: 0;
+    animation-name: fadein;
+    animation-delay: 150ms;
+    animation-duration: 1s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+  }
+
+  .time:empty {
+    display: inline-block;
+    width: 23ch;
+    height: 0.75lh;
+    translate: 0 0.1lh;
+    background-color: #efefef;
+    border-radius: 3px;
+    transition: opacity 150ms ease-in;
+    opacity: 1;
+  }
+</style>
+
+<div>It is currently <span class="time"></span>.</div>

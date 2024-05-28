@@ -91,7 +91,6 @@ const htmlPlugin = (
           }
 
           const componentMarkup = parseFragment(htmlFile);
-
           const templateNode = findNode(
             componentMarkup,
             (el) => getTagName(el) === 'template',
@@ -122,6 +121,7 @@ const htmlPlugin = (
               }
               remove(slot);
             }
+            console.log(element, newTag);
             insertBefore(getParentNode(element), newTag, element);
             remove(element);
           }
@@ -139,13 +139,10 @@ export default defineConfig({
   build: {},
   resolve: {
     alias: {
-      '@/': path.resolve(__dirname),
+      '@': path.resolve(__dirname),
     },
   },
   plugins: [
-    // viteRaw({
-    //   fileRegex: /\.html$/,
-    // }),
     transformImportedHtmlPlugin(),
     htmlPlugin({ rootDir: `${process.cwd()}/src` }),
   ],

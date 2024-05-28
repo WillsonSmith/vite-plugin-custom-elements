@@ -3,7 +3,7 @@
   "author": "Willson Smith (me@willsonsmith.com)",
   "license": "MIT",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite --host"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",

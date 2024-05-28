@@ -17,25 +17,12 @@ import { readFile } from 'node:fs/promises';
 import { parse, parseFragment, serialize } from 'parse5';
 import path from 'path';
 import { defineConfig } from 'vite';
-import viteRaw from 'vite-raw-plugin';
 
 const transformImportedHtmlPlugin = () => {
   return {
     name: 'transform-imported-html',
-    // resolveId(id) {
-    //   console.log(id);
-    //   const regex = /\.html\?component$/;
-    //   if (regex.test(id)) {
-    //     return 'transform-html';
-    //   }
-    // },
-    // load(id) {
-    //   if (id === 'transform-html') {
-    //     console.log(id);
-    //     return '';
-    //   }
-    // },
-    transform(src, id) {
+
+    transform(src: string, id: string) {
       const regex = /\.html\?component$/;
       if (regex.test(id)) {
         const fragment = parseFragment(src);
@@ -43,8 +30,6 @@ const transformImportedHtmlPlugin = () => {
           fragment,
           (el) => getTagName(el) === 'template',
         );
-
-        console.log();
 
         if (templateNode) {
           for (const child of getChildNodes(getTemplateContent(templateNode))) {
@@ -58,16 +43,6 @@ const transformImportedHtmlPlugin = () => {
         };
       }
     },
-    // transform(src, id) {
-    //   console.log(id);
-    //   const regex = /\.html\?component$/;
-    //   if (regex.test(id)) {
-    //     console.log(id);
-    //     return {
-    //       code: src,
-    //     };
-    //   }
-    // },
   };
 };
 
@@ -76,8 +51,6 @@ const htmlPlugin = () => {
     name: 'html-transform',
     transformIndexHtml: async (htmlContent: string) => {
       const doc = parse(htmlContent);
-      // const html = findElement(doc, findTag('html'));
-      // const head = findElement(doc, findTag('html'));
       const body = findElement(doc, findTag('html'));
 
       const customElements = findElements(doc, (el) =>
@@ -115,25 +88,43 @@ const htmlPlugin = () => {
           }
 
           const componentMarkup = parseFragment(htmlFile);
-          const slot = findElement(componentMarkup, findTag('slot'));
 
-          if (slot) {
+          const templateNode = findNode(
+            componentMarkup,
+            (el) => getTagName(el) === 'template',
+          );
+
+          /* When using a template w/ shadowrootmode="open" it should maintain the template node */
+          if (templateNode) {
             const newTag = createElement(getTagName(element));
+            appendChild(newTag, templateNode);
 
-            for (const c of getChildNodes(componentMarkup)) {
-              appendChild(newTag, c);
+            for (const child of getChildNodes(element)) {
+              appendChild(newTag, child);
             }
-
-            const slot = findElement(newTag, findTag('slot'));
-            const children = getChildNodes(element);
-            for (const child of children) {
-              insertBefore(getParentNode(slot), child, slot);
-            }
-
-            remove(slot);
-
             insertBefore(getParentNode(element), newTag, element);
             remove(element);
+          } else {
+            const slot = findElement(componentMarkup, findTag('slot'));
+
+            if (slot) {
+              const newTag = createElement(getTagName(element));
+
+              for (const c of getChildNodes(componentMarkup)) {
+                appendChild(newTag, c);
+              }
+
+              const slot = findElement(newTag, findTag('slot'));
+              const children = getChildNodes(element);
+              for (const child of children) {
+                insertBefore(getParentNode(slot), child, slot);
+              }
+
+              remove(slot);
+
+              insertBefore(getParentNode(element), newTag, element);
+              remove(element);
+            }
           }
         } catch (error) {
           console.log(error);

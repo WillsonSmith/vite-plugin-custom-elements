@@ -10,13 +10,13 @@ if (!customElements?.get('adjustable-column')) {
       autoBind(this);
 
       if (!this.shadowRoot) {
-        this.attachShadow({ mode: 'open' });
-        const template = document.createElement('template');
-
-        template.innerHTML = `${html}`;
-
-        this.renderRoot.innerHTML = ``;
-        this.renderRoot.appendChild(template.content.cloneNode(true));
+        // this.attachShadow({ mode: 'open' });
+        // const template = document.createElement('template');
+        //
+        // template.innerHTML = `${html}`;
+        //
+        // this.renderRoot.innerHTML = ``;
+        // this.renderRoot.appendChild(template.content.cloneNode(true));
       }
     }
 

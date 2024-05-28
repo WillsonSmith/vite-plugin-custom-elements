@@ -1,17 +1,19 @@
-<!-- <template shadowrootmode="open"> -->
-<style>
-  .column {
-    width: 80%;
-    display: flex;
-    flex-direction: column;
+<template shadowrootmode="open">
+  <style>
+    .column {
+      width: 80%;
+      display: flex;
+      flex-direction: column;
 
-    &.narrow {
-      max-width: 60ch;
+      &.narrow {
+        max-width: 60ch;
+      }
     }
-  }
-</style>
-<div class="column narrow">
-  <button style="align-self: flex-end" click="adjustColumns">Colsize</button>
-  <slot></slot>
-</div>
-<!-- </template> -->
+  </style>
+  <div class="column narrow">
+    <button style="align-self: flex-start" click="adjustColumns">
+      Colsize
+    </button>
+    <slot></slot>
+  </div>
+</template>

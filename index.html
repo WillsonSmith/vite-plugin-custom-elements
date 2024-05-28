@@ -5,20 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/styles/root.css" />
     <title>Project Template 2024</title>
-  </head>
-  <body>
-    <navigation-header>
-      <a href="/blog">Blog</a>
-    </navigation-header>
-    <div
-      style="
+    <style>
+      .container {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
         width: 100%;
         align-items: center;
-      "
-    >
+      }
+
+      adjustable-column {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <navigation-header>
+      <a href="/blog">Blog</a>
+    </navigation-header>
+    <div class="container" style="">
       <adjustable-column>
         <p>
           This is my adjustable column content. It goes on for a while and then

@@ -1,0 +1,11 @@
+.column {
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+
+  &.narrow {
+    max-width: 60ch;
+  }
+}
+
+

@@ -7,6 +7,21 @@
     <title>Project Template 2024</title>
   </head>
   <body>
-    <script type="module" src="main.ts"></script>
+    <navigation-header>
+      <a href="/blog">Blog</a>
+    </navigation-header>
+    <div style="display: flex; width: 100%; justify-content: center">
+      <adjustable-column>
+        <p>
+          This is my adjustable column content. It goes on for a while and then
+          a while longer and it can be adjusted with a button.
+        </p>
+      </adjustable-column>
+    </div>
+
+    <script
+      type="module"
+      src="./components/adjustable-column/adjustable-column.ts"
+    ></script>
   </body>
 </html>

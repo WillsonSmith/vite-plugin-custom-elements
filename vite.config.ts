@@ -121,7 +121,7 @@ const htmlPlugin = (
               }
               remove(slot);
             }
-            console.log(element, newTag);
+
             insertBefore(getParentNode(element), newTag, element);
             remove(element);
           }

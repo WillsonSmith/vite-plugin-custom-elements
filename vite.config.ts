@@ -4,6 +4,7 @@ import {
   createElement,
   findElement,
   findElements,
+  getAttribute,
   getChildNodes,
   getParentNode,
   getTagName,
@@ -23,7 +24,7 @@ const htmlPlugin = () => {
       const doc = parse(htmlContent);
       // const html = findElement(doc, findTag('html'));
       // const head = findElement(doc, findTag('html'));
-      // const body = findElement(doc, findTag('html'));
+      const body = findElement(doc, findTag('html'));
 
       const customElements = findElements(doc, (el) =>
         isCustomElement(getTagName(el)),
@@ -31,12 +32,35 @@ const htmlPlugin = () => {
 
       for (const element of customElements) {
         try {
-          const f = await readFile(
+          const htmlFile = await readFile(
             `${process.cwd()}/components/${element.tagName}/${element.tagName}.html`,
             'utf8',
-          );
+          ).catch(() => undefined);
+          const scriptSrc = `./components/${element.tagName}/${element.tagName}.ts`;
+          const tsFile = await readFile(
+            `${process.cwd()}/${scriptSrc}`,
+            'utf8',
+          ).catch(() => undefined);
 
-          const componentMarkup = parseFragment(f);
+          if (!htmlFile) return;
+
+          if (tsFile) {
+            const scriptExists = findElement(doc, (el) => {
+              return (
+                getTagName(el) === 'script' &&
+                getAttribute(el, 'src') === scriptSrc
+              );
+            });
+
+            if (!scriptExists) {
+              appendChild(
+                body,
+                createElement('script', { src: scriptSrc, type: 'module' }),
+              );
+            }
+          }
+
+          const componentMarkup = parseFragment(htmlFile);
           const slot = findElement(componentMarkup, findTag('slot'));
 
           if (slot) {

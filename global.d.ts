@@ -1,4 +1,4 @@
-declare module '*.html' {
+declare module '*.html?component' {
   const content: string;
   export default content;
 }

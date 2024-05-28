@@ -4,10 +4,12 @@ import {
   createElement,
   findElement,
   findElements,
+  findNode,
   getAttribute,
   getChildNodes,
   getParentNode,
   getTagName,
+  getTemplateContent,
   insertBefore,
   remove,
 } from '@web/parse5-utils';
@@ -16,6 +18,58 @@ import { parse, parseFragment, serialize } from 'parse5';
 import path from 'path';
 import { defineConfig } from 'vite';
 import viteRaw from 'vite-raw-plugin';
+
+const transformImportedHtmlPlugin = () => {
+  return {
+    name: 'transform-imported-html',
+    // resolveId(id) {
+    //   console.log(id);
+    //   const regex = /\.html\?component$/;
+    //   if (regex.test(id)) {
+    //     return 'transform-html';
+    //   }
+    // },
+    // load(id) {
+    //   if (id === 'transform-html') {
+    //     console.log(id);
+    //     return '';
+    //   }
+    // },
+    transform(src, id) {
+      const regex = /\.html\?component$/;
+      if (regex.test(id)) {
+        const fragment = parseFragment(src);
+        const templateNode = findNode(
+          fragment,
+          (el) => getTagName(el) === 'template',
+        );
+
+        console.log();
+
+        if (templateNode) {
+          for (const child of getChildNodes(getTemplateContent(templateNode))) {
+            appendChild(fragment, child);
+          }
+          remove(templateNode);
+        }
+
+        return {
+          code: `export default \`${serialize(fragment).trim()}\``,
+        };
+      }
+    },
+    // transform(src, id) {
+    //   console.log(id);
+    //   const regex = /\.html\?component$/;
+    //   if (regex.test(id)) {
+    //     console.log(id);
+    //     return {
+    //       code: src,
+    //     };
+    //   }
+    // },
+  };
+};
 
 const htmlPlugin = () => {
   return {
@@ -98,9 +152,10 @@ export default defineConfig({
     },
   },
   plugins: [
-    viteRaw({
-      fileRegex: /\.html$/,
-    }),
+    // viteRaw({
+    //   fileRegex: /\.html$/,
+    // }),
+    transformImportedHtmlPlugin(),
     htmlPlugin(),
   ],
 });

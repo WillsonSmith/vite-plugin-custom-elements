@@ -1,0 +1,15 @@
+<template shadowrootmode="open">
+  <style>
+    .column {
+      width: 80%;
+    }
+
+    .narrow {
+      width: minmax(100%, 60ch);
+    }
+  </style>
+  <div class="column narrow">
+    <button onClick="adjustColumns">Colsize</button>
+    <slot></slot>
+  </div>
+</template>

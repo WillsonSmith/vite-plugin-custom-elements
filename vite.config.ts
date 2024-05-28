@@ -32,30 +32,30 @@ const htmlPlugin = () => {
 
       for (const element of customElements) {
         try {
-          const htmlFile = await readFile(
-            `${process.cwd()}/components/${element.tagName}/${element.tagName}.html`,
-            'utf8',
-          ).catch(() => undefined);
-          const scriptSrc = `./components/${element.tagName}/${element.tagName}.ts`;
-          const tsFile = await readFile(
-            `${process.cwd()}/${scriptSrc}`,
-            'utf8',
-          ).catch(() => undefined);
+          const { html: htmlFile, script: scriptFile } =
+            await readComponentFile({
+              componentDir: './components/',
+              componentName: getTagName(element),
+            });
 
           if (!htmlFile) return;
 
-          if (tsFile) {
+          if (scriptFile) {
             const scriptExists = findElement(doc, (el) => {
               return (
                 getTagName(el) === 'script' &&
-                getAttribute(el, 'src') === scriptSrc
+                getAttribute(el, 'src') ===
+                  `./components/${getTagName(element)}/${getTagName(element)}.ts`
               );
             });
 
             if (!scriptExists) {
               appendChild(
                 body,
-                createElement('script', { src: scriptSrc, type: 'module' }),
+                createElement('script', {
+                  src: `./components/${getTagName(element)}/${getTagName(element)}.ts`,
+                  type: 'module',
+                }),
               );
             }
           }
@@ -123,4 +123,21 @@ function findTag(tagName: string) {
   return (el) => {
     return getTagName(el) === tagName;
   };
+}
+
+type ReadComponentOptions = {
+  componentDir: string;
+  componentName: string;
+  rootDir?: string;
+};
+
+async function readComponentFile({
+  componentDir,
+  componentName,
+  rootDir = process.cwd(),
+}: ReadComponentOptions) {
+  const dir = `${rootDir}/${componentDir}/${componentName}/${componentName}`;
+  const html = await readFile(dir + '.html', 'utf8').catch(() => undefined);
+  const script = await readFile(dir + '.ts', 'utf8').catch(() => undefined);
+  return { html, script };
 }

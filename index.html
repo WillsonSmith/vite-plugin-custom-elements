@@ -10,18 +10,24 @@
     <navigation-header>
       <a href="/blog">Blog</a>
     </navigation-header>
-    <div style="display: flex; width: 100%; justify-content: center">
+    <div
+      style="
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+        align-items: center;
+      "
+    >
       <adjustable-column>
         <p>
           This is my adjustable column content. It goes on for a while and then
           a while longer and it can be adjusted with a button.
         </p>
       </adjustable-column>
+      <adjustable-column>
+        <p>This is another column</p>
+      </adjustable-column>
     </div>
-
-    <script
-      type="module"
-      src="./components/adjustable-column/adjustable-column.ts"
-    ></script>
   </body>
 </html>

@@ -17,8 +17,6 @@
       {
         "name": "ts-lit-plugin"
       }
-    ],
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    ]
   }
 }

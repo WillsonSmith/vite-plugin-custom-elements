@@ -31,6 +31,7 @@ if (!customElements?.get('adjustable-column')) {
       }
     }
 
+    /* */
     adjustColumns() {
       this.renderRoot.querySelector('.column')?.classList.toggle('narrow');
     }

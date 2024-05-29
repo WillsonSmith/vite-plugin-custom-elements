@@ -144,7 +144,6 @@ const htmlPlugin = ({
           if (available) {
             const modulePath = (path + available.path).split(rootDir).join('');
             const module = await dynamicImportTs(modulePath);
-            console.log(module[available.className]);
             const ElementClass = module[available.className];
             const n = new ElementClass();
             const markup = n.render({
@@ -155,17 +154,23 @@ const htmlPlugin = ({
             scriptSrc = modulePath;
           }
 
-          // const { html: htmlFile, script: scriptFile } =
-          //   await readComponentFile({
-          //     rootDir: path,
-          //     componentDir: 'components',
-          //     componentName: getTagName(element),
-          //   });
+          if (!htmlFile) {
+            console.log('no file found yet');
+
+            const htmlComponents = await glob(path + '/' + componentsDir + '/**/*-*.html');
+            const thisComponent = htmlComponents.find(c => c.includes(getTagName(element)));
+
+            if (thisComponent) {
+              const content = await readFile(thisComponent, 'utf8');
+              htmlFile = content;
+
+              // if has a script import then add it to the html? Maybe?
+            }
+          }
 
           if (!htmlFile) continue;
 
           if (scriptSrc) {
-            console.log(scriptSrc)
             const scriptExists = findElement(doc, (el) => {
               return (
                 getTagName(el) === 'script' &&
@@ -177,26 +182,6 @@ const htmlPlugin = ({
               appendChild(body, createElement('script', {src: scriptSrc, type: 'module'}));
             }
           }
-
-          // if (scriptFile) {
-            // const scriptExists = findElement(doc, (el) => {
-            //   return (
-            //     getTagName(el) === 'script' &&
-            //     getAttribute(el, 'src') ===
-            //       `${path}/${componentsDir}/${getTagName(element)}/${getTagName(element)}.ts`
-            //   );
-            // });
-          //
-          //   if (!scriptExists) {
-          //     appendChild(
-          //       body,
-          //       createElement('script', {
-          //         src: `${path}/${componentsDir}/${getTagName(element)}/${getTagName(element)}.ts`,
-          //         type: 'module',
-          //       }),
-          //     );
-          //   }
-          // }
 
           const componentMarkup = parseFragment(htmlFile);
           const templateNode = findNode(

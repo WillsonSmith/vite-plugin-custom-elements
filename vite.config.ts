@@ -46,12 +46,20 @@ const transformImportedHtmlPlugin = () => {
   };
 };
 
-const htmlPlugin = (
-  { rootDir }: { rootDir?: string } = { rootDir: process.cwd() },
-) => {
+const htmlPlugin = ({
+  rootDir = process.cwd(),
+  componentsDir = 'components',
+}: {
+  rootDir: string;
+  componentsDir: string;
+}) => {
   return {
     name: 'html-transform',
     transformIndexHtml: async (htmlContent: string) => {
+      const cwd = process.cwd();
+
+      const path = `${cwd}/${rootDir?.split(cwd).join('') || ''}`;
+
       const doc = parse(htmlContent);
       const body = findElement(doc, findTag('html'));
 
@@ -63,7 +71,7 @@ const htmlPlugin = (
         try {
           const { html: htmlFile, script: scriptFile } =
             await readComponentFile({
-              rootDir,
+              rootDir: path,
               componentDir: 'components',
               componentName: getTagName(element),
             });
@@ -75,7 +83,7 @@ const htmlPlugin = (
               return (
                 getTagName(el) === 'script' &&
                 getAttribute(el, 'src') ===
-                  `${rootDir}/components/${getTagName(element)}/${getTagName(element)}.ts`
+                  `${path}/${componentsDir}/${getTagName(element)}/${getTagName(element)}.ts`
               );
             });
 
@@ -83,7 +91,7 @@ const htmlPlugin = (
               appendChild(
                 body,
                 createElement('script', {
-                  src: `${rootDir}/components/${getTagName(element)}/${getTagName(element)}.ts`,
+                  src: `${path}/${componentsDir}/${getTagName(element)}/${getTagName(element)}.ts`,
                   type: 'module',
                 }),
               );
@@ -135,19 +143,6 @@ const htmlPlugin = (
   };
 };
 
-export default defineConfig({
-  build: {},
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname),
-    },
-  },
-  plugins: [
-    transformImportedHtmlPlugin(),
-    htmlPlugin({ rootDir: `${process.cwd()}/src` }),
-  ],
-});
-
 function isCustomElement(tagName: string) {
   const reserved = [
     'annotation-xml',
@@ -180,9 +175,21 @@ async function readComponentFile({
   rootDir = process.cwd(),
 }: ReadComponentOptions) {
   const dir = `${rootDir}/${componentDir}/${componentName}/${componentName}`;
-  const html = await readFile(dir + '.html', 'utf8').catch((e) => {
-    return undefined;
-  });
+  const html = await readFile(dir + '.html', 'utf8').catch(() => undefined);
   const script = await readFile(dir + '.ts', 'utf8').catch(() => undefined);
   return { html, script };
 }
+
+export default defineConfig({
+  build: {},
+  root: 'src',
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname),
+    },
+  },
+  plugins: [
+    transformImportedHtmlPlugin(),
+    htmlPlugin({ rootDir: './src', componentsDir: 'components' }),
+  ],
+});

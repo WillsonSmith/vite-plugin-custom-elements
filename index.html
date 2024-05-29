@@ -6,12 +6,12 @@
     <link rel="stylesheet" href="/styles/root.css" />
     <title>Project Template 2024</title>
     <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
       .container {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        width: 100%;
-        align-items: center;
+        padding: 1rem;
       }
 
       adjustable-column {
@@ -20,6 +20,7 @@
     </style>
   </head>
   <body>
-    <div><x-time>12:00</x-time></div>
+    <x-nav></x-nav>
+    <div class="container"><x-time>12:00</x-time></div>
   </body>
 </html>

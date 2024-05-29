@@ -137,6 +137,9 @@ const htmlPlugin = ({
       for (const element of customElements) {
         try {
 
+          let htmlFile: string | undefined;
+          let scriptSrc: string | undefined;
+
           const available = availableElements.find(el => el.tagName === getTagName(element));
           if (available) {
             const modulePath = (path + available.path).split(rootDir).join('');
@@ -146,38 +149,54 @@ const htmlPlugin = ({
             const n = new ElementClass();
             const markup = n.render({
               html
-            })
-            console.log(markup);
+            });
+
+            htmlFile = markup;
+            scriptSrc = modulePath;
           }
 
-          const { html: htmlFile, script: scriptFile } =
-            await readComponentFile({
-              rootDir: path,
-              componentDir: 'components',
-              componentName: getTagName(element),
-            });
+          // const { html: htmlFile, script: scriptFile } =
+          //   await readComponentFile({
+          //     rootDir: path,
+          //     componentDir: 'components',
+          //     componentName: getTagName(element),
+          //   });
 
           if (!htmlFile) continue;
 
-          if (scriptFile) {
+          if (scriptSrc) {
+            console.log(scriptSrc)
             const scriptExists = findElement(doc, (el) => {
               return (
                 getTagName(el) === 'script' &&
-                getAttribute(el, 'src') ===
-                  `${path}/${componentsDir}/${getTagName(element)}/${getTagName(element)}.ts`
+                getAttribute(el, 'src') === scriptSrc
               );
             });
 
             if (!scriptExists) {
-              appendChild(
-                body,
-                createElement('script', {
-                  src: `${path}/${componentsDir}/${getTagName(element)}/${getTagName(element)}.ts`,
-                  type: 'module',
-                }),
-              );
+              appendChild(body, createElement('script', {src: scriptSrc, type: 'module'}));
             }
           }
+
+          // if (scriptFile) {
+            // const scriptExists = findElement(doc, (el) => {
+            //   return (
+            //     getTagName(el) === 'script' &&
+            //     getAttribute(el, 'src') ===
+            //       `${path}/${componentsDir}/${getTagName(element)}/${getTagName(element)}.ts`
+            //   );
+            // });
+          //
+          //   if (!scriptExists) {
+          //     appendChild(
+          //       body,
+          //       createElement('script', {
+          //         src: `${path}/${componentsDir}/${getTagName(element)}/${getTagName(element)}.ts`,
+          //         type: 'module',
+          //       }),
+          //     );
+          //   }
+          // }
 
           const componentMarkup = parseFragment(htmlFile);
           const templateNode = findNode(

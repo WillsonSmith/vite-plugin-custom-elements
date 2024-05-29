@@ -24,6 +24,9 @@ var BaseElement = class extends HTMLElement {
 
 // src/components/layout/x-layout.ts
 var XLayout = class extends BaseElement {
+  connectedCallback() {
+    console.log("connected");
+  }
   render({ html, attrs }) {
     const layout = attrs?.layout || "single-column";
     return html`
@@ -48,6 +51,9 @@ var XLayout = class extends BaseElement {
     this.observedAttributes = ["layout"];
   }
 };
+if (globalThis.customElements && !customElements?.get("x-layout")) {
+  customElements.define("x-layout", XLayout);
+}
 export {
   XLayout
 };

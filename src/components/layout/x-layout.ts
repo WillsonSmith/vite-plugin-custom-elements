@@ -5,6 +5,11 @@ import { BaseElement, RenderOptions } from '../BaseElement/BaseElement';
  * @element x-layout
  */
 export class XLayout extends BaseElement {
+
+  connectedCallback() {
+    console.log('connected')
+  }
+
   render({ html, attrs }: RenderOptions) {
     const layout = attrs?.layout || 'single-column';
 
@@ -28,6 +33,10 @@ export class XLayout extends BaseElement {
   }
 
   static observedAttributes = ['layout'];
+}
+
+if (globalThis.customElements && !customElements?.get('x-layout')) {
+  customElements.define('x-layout', XLayout);
 }
 
 

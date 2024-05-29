@@ -1,4 +1,4 @@
-import { BaseElement } from '../BASE/BaseElement';
+import { BaseElement } from '../BaseElement/BaseElement';
 
 import './x-time.html?component';
 import { define } from '@/utility/define';

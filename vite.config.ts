@@ -11,6 +11,7 @@ import {
   getParentNode,
   getTagName,
   getTemplateContent,
+  hasAttribute,
   insertBefore,
   remove,
   setAttribute,
@@ -22,7 +23,7 @@ import {create} from  '@custom-elements-manifest/analyzer';
 
 import { readFile } from 'node:fs/promises';
 import { parse, parseFragment, serialize } from 'parse5';
-import path from 'path';
+import path from 'node:path';
 import { defineConfig } from 'vite';
 
 const transformImportedHtmlPlugin = () => {
@@ -62,6 +63,7 @@ function html(strings: TemplateStringsArray, ...values: unknown[]) {
     return String.raw({ raw: strings }, ...values);
   }
 
+
 const htmlPlugin = ({
   rootDir = process.cwd(),
   componentsDir = 'components',
@@ -77,9 +79,9 @@ const htmlPlugin = ({
 
       const cwd = process.cwd();
 
-      const path = `${cwd}/${rootDir?.split(cwd).join('') || ''}`;
+      const sourcePath = `${cwd}/${rootDir?.split(cwd).join('') || ''}`;
 
-      const tsFiles = (await glob(`${path}/**/*.ts`, {ignore: 'node_modules/**'})).map(file => {
+      const tsFiles = (await glob(`${sourcePath}/**/*.ts`, {ignore: 'node_modules/**'})).map(file => {
         return {
           path: file,
           source: readFile(file, 'utf8')
@@ -144,7 +146,7 @@ const htmlPlugin = ({
 
           const available = availableElements.find(el => el.tagName === getTagName(element));
           if (available) {
-            const modulePath = (path + available.path).split(rootDir).join('');
+            const modulePath = (sourcePath + available.path).split(rootDir).join('');
             const module = await dynamicImportTs(modulePath);
             const ElementClass = module[available.className];
             const n = new ElementClass();
@@ -157,14 +159,25 @@ const htmlPlugin = ({
           }
 
           if (!htmlFile) {
-            const htmlComponents = await glob(path + '/' + componentsDir + '/**/*-*.html');
+            const htmlComponents = await glob(sourcePath + '/' + componentsDir + '/**/*-*.html');
             const thisComponent = htmlComponents.find(c => c.includes(getTagName(element)));
 
             if (thisComponent) {
               const content = await readFile(thisComponent, 'utf8');
-              htmlFile = content;
+              // htmlFile = content;
 
-              // if has a script import then add it to the html? Maybe?
+              const fragment = parseFragment(content);
+
+              // Change script logic to copy to body if not there. This is important for content that is within the script tag.
+              const script = findElement(fragment, (element) => {
+                return getTagName(element) === 'script' && hasAttribute(element, 'src');
+              });
+
+              remove(script);
+              htmlFile = serialize(fragment);
+
+              const scSource = `${path.dirname(thisComponent)}/${getAttribute(script, 'src')}`;
+              scriptSrc = scSource;
             }
           }
 

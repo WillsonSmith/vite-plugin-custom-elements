@@ -1,7 +1,6 @@
 import { BaseElement } from '../BaseElement/BaseElement';
 
 // import './x-time.html?component';
-import { define } from '@/utility/define';
 
 /**
  * A custom element that displays the current time.
@@ -28,4 +27,13 @@ export class XTime extends BaseElement {
   }
 }
 
-define('x-time', XTime);
+if (!customElements?.get('x-time')) {
+  customElements?.define('x-time', XTime);
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'x-time': XTime;
+  }
+}
+

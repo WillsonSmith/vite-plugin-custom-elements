@@ -30,7 +30,6 @@ export class XLayout extends BaseElement {
   static observedAttributes = ['layout'];
 }
 
-export default XLayout;
 
 declare global {
   interface HTMLElementTagNameMap {

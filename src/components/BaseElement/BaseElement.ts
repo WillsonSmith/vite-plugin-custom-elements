@@ -1,6 +1,6 @@
 if (!globalThis.HTMLElement) {
   // @ts-expect-error When undefined we don't want it to fail
-  globalThis.HTMLElement = class {};
+  globalThis.HTMLElement = class { };
 }
 
 export type RenderOptions = {

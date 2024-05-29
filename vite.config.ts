@@ -14,6 +14,8 @@ import {
   remove,
 } from '@web/parse5-utils';
 
+import type {Package} from 'custom-elements-manifest';
+
 import {create} from  '@custom-elements-manifest/analyzer';
 
 import { readFile } from 'node:fs/promises';
@@ -87,10 +89,37 @@ const htmlPlugin = ({
           ))
       }
 
-      const manifest = create({modules: srcFiles})
-      const availableElements = manifest.modules?.filter(module => {
-        return module.declarations.some(declaration => declaration.customElement)
-      });
+      type AvailableElement = {
+        tagName: string,
+        path: string,
+        className: string
+      }
+
+      const availableElements: AvailableElement[] = [];
+
+      const manifest: Package = create({modules: srcFiles});
+
+      for (const module of manifest.modules) {
+        if (!module.declarations) continue;
+        for (const declaration of module.declarations) {
+          if ('customElement' in declaration && declaration.tagName) {
+            const exports = module.exports?.find(mod => mod.name === declaration.name);
+            if (exports !== undefined) {
+              const tagName = declaration.tagName;
+              const path = exports.declaration.module;
+              const className = exports.name;
+              if (tagName && path && className) {
+              availableElements.push({
+                tagName,
+                path,
+                className
+              })
+              }
+            }
+          }
+        }
+      }
+
 
       const doc = parse(htmlContent);
       const body = findElement(doc, findTag('html'));
@@ -98,6 +127,10 @@ const htmlPlugin = ({
       const customElements = findElements(doc, (el) =>
         isCustomElement(getTagName(el)),
       );
+
+      // for (const element of customElements) {
+      //   console.log(availableElements.find(el => el.tagName === getTagName(element)))
+      // }
 
       for (const element of customElements) {
         try {

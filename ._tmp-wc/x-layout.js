@@ -25,19 +25,20 @@ var BaseElement = class extends HTMLElement {
 // src/components/layout/x-layout.ts
 var XLayout = class extends BaseElement {
   connectedCallback() {
-    console.log("connected");
+    console.log(this.querySelector(".x-layout"));
+    this.layout = this.querySelector(".x-layout") || void 0;
   }
   render({ html, attrs }) {
     const layout = attrs?.layout || "single-column";
     return html`
       <style>
-        x-layout {
+        .x-layout {
           display: flex;
           flex-direction: column;
           width: 100%;
         }
 
-        x-layout--two-column {
+        .x-layout--two-column {
           flex-direction: row;
           flex: 50% 50%;
         }
@@ -46,6 +47,11 @@ var XLayout = class extends BaseElement {
         <slot></slot>
       </div>
     `;
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "layout") {
+      this.querySelector(".x-layout")?.classList.toggle("x-layout--two-column", this.getAttribute("layout") === "two-column");
+    }
   }
   static {
     this.observedAttributes = ["layout"];

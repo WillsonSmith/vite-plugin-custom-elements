@@ -6,8 +6,10 @@ import { BaseElement, RenderOptions } from '../BaseElement/BaseElement';
  */
 export class XLayout extends BaseElement {
 
+  layout?: HTMLElement;
   connectedCallback() {
-    console.log('connected')
+    console.log(this.querySelector('.x-layout'))
+    this.layout = this.querySelector('.x-layout') || undefined;
   }
 
   render({ html, attrs }: RenderOptions) {
@@ -15,13 +17,13 @@ export class XLayout extends BaseElement {
 
     return html`
       <style>
-        x-layout {
+        .x-layout {
           display: flex;
           flex-direction: column;
           width: 100%;
         }
 
-        x-layout--two-column {
+        .x-layout--two-column {
           flex-direction: row;
           flex: 50% 50%;
         }
@@ -30,6 +32,12 @@ export class XLayout extends BaseElement {
         <slot></slot>
       </div>
     `;
+  }
+
+  attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
+    if (name === 'layout') {
+      this.querySelector('.x-layout')?.classList.toggle('x-layout--two-column', this.getAttribute('layout') === 'two-column')
+    }
   }
 
   static observedAttributes = ['layout'];

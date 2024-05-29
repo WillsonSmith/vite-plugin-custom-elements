@@ -6,12 +6,14 @@ import {
   findElements,
   findNode,
   getAttribute,
+  getAttributes,
   getChildNodes,
   getParentNode,
   getTagName,
   getTemplateContent,
   insertBefore,
   remove,
+  setAttribute,
 } from '@web/parse5-utils';
 
 import type {Package} from 'custom-elements-manifest';
@@ -155,8 +157,6 @@ const htmlPlugin = ({
           }
 
           if (!htmlFile) {
-            console.log('no file found yet');
-
             const htmlComponents = await glob(path + '/' + componentsDir + '/**/*-*.html');
             const thisComponent = htmlComponents.find(c => c.includes(getTagName(element)));
 
@@ -191,6 +191,7 @@ const htmlPlugin = ({
 
           /* When using a template w/ shadowrootmode="open" it should maintain the template node */
           if (templateNode) {
+
             const newTag = createElement(getTagName(element));
             appendChild(newTag, templateNode);
 
@@ -200,7 +201,11 @@ const htmlPlugin = ({
             insertBefore(getParentNode(element), newTag, element);
             remove(element);
           } else {
+
             const newTag = createElement(getTagName(element));
+            for (const [key, value] of Object.entries(getAttributes(element))) {
+              setAttribute(newTag, key, value);
+            }
             for (const c of getChildNodes(componentMarkup)) {
               appendChild(newTag, c);
             }

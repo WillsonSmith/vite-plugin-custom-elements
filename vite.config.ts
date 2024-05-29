@@ -13,6 +13,9 @@ import {
   insertBefore,
   remove,
 } from '@web/parse5-utils';
+
+import {create} from  '@custom-elements-manifest/analyzer';
+
 import { readFile } from 'node:fs/promises';
 import { parse, parseFragment, serialize } from 'parse5';
 import path from 'path';
@@ -46,6 +49,9 @@ const transformImportedHtmlPlugin = () => {
   };
 };
 
+import {glob} from 'glob';
+import ts  from 'typescript';
+
 const htmlPlugin = ({
   rootDir = process.cwd(),
   componentsDir = 'components',
@@ -56,9 +62,35 @@ const htmlPlugin = ({
   return {
     name: 'html-transform',
     transformIndexHtml: async (htmlContent: string) => {
+
+      // const availableElements = create()
+
       const cwd = process.cwd();
 
       const path = `${cwd}/${rootDir?.split(cwd).join('') || ''}`;
+
+      const tsFiles = (await glob(`${path}/**/*.ts`, {ignore: 'node_modules/**'})).map(file => {
+        return {
+          path: file,
+          source: readFile(file, 'utf8')
+        };
+      });
+
+      const srcFiles = [];
+      for (const file of tsFiles) {
+        srcFiles.push(
+          ts.createSourceFile(
+            file.path.split(process.cwd()).join(''), 
+            await file.source, 
+            ts.ScriptTarget.ES2020,
+            true
+          ))
+      }
+
+      const manifest = create({modules: srcFiles})
+      const availableElements = manifest.modules?.filter(module => {
+        return module.declarations.some(declaration => declaration.customElement)
+      });
 
       const doc = parse(htmlContent);
       const body = findElement(doc, findTag('html'));

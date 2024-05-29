@@ -3,7 +3,8 @@
   "author": "Willson Smith (me@willsonsmith.com)",
   "license": "MIT",
   "scripts": {
-    "dev": "vite --host"
+    "dev": "vite --host",
+    "manifest": "cem analyze"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",
@@ -30,9 +31,12 @@
     "vite-raw-plugin": "^1.0.2"
   },
   "dependencies": {
+    "@custom-elements-manifest/analyzer": "^0.10.2",
     "@open-wc/dedupe-mixin": "^1.4.0",
     "@web/parse5-utils": "^2.1.0",
     "@webcomponents/scoped-custom-element-registry": "^0.0.9",
+    "custom-elements-manifest": "^2.1.0",
+    "glob": "^10.4.1",
     "vite": "^5.2.11"
   },
   "lint-staged": {

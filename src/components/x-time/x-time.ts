@@ -1,13 +1,13 @@
 import { BaseElement } from '../BaseElement/BaseElement';
 
-import './x-time.html?component';
+// import './x-time.html?component';
 import { define } from '@/utility/define';
 
 /**
  * A custom element that displays the current time.
  * @element x-time
  */
-class XTime extends BaseElement {
+export class XTime extends BaseElement {
   private interval?: ReturnType<typeof setInterval>;
 
   connectedCallback() {

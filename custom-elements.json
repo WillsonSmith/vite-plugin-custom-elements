@@ -1,0 +1,316 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "utility/autobind.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "autoBind",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "parameters": [
+            {
+              "name": "instance",
+              "type": {
+                "text": "T"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "autoBind",
+          "declaration": {
+            "name": "autoBind",
+            "module": "utility/autobind.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "utility/define.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "define",
+          "parameters": [
+            {
+              "name": "tagName",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "elementClass",
+              "type": {
+                "text": "CustomElementConstructor"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "define",
+          "declaration": {
+            "name": "define",
+            "module": "utility/define.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "tagName",
+          "declaration": {
+            "name": "elementClass",
+            "module": "utility/define.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/layout/x-layout.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "An element to lay out content in various ways",
+          "name": "XLayout",
+          "members": [
+            {
+              "kind": "method",
+              "name": "render",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "{ html, attrs }",
+                  "type": {
+                    "text": "RenderOptions"
+                  }
+                }
+              ],
+              "description": "Renders the component. Subclasses can override this method to provide specific rendering logic.",
+              "inheritedFrom": {
+                "name": "BaseElement",
+                "module": "src/components/BaseElement/BaseElement.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "html",
+              "privacy": "protected",
+              "parameters": [
+                {
+                  "name": "strings",
+                  "type": {
+                    "text": "TemplateStringsArray"
+                  }
+                },
+                {
+                  "name": "values",
+                  "type": {
+                    "text": "unknown[]"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "BaseElement",
+                "module": "src/components/BaseElement/BaseElement.ts"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "layout"
+            }
+          ],
+          "superclass": {
+            "name": "BaseElement",
+            "module": "/src/components/BaseElement/BaseElement"
+          },
+          "tagName": "x-layout",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "XLayout",
+          "declaration": {
+            "name": "XLayout",
+            "module": "src/components/layout/x-layout.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "default",
+          "declaration": {
+            "name": "XLayout",
+            "module": "src/components/layout/x-layout.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/BaseElement/BaseElement.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "BaseElement",
+          "members": [
+            {
+              "kind": "method",
+              "name": "render",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "_options",
+                  "type": {
+                    "text": "RenderOptions"
+                  },
+                  "description": "The options for rendering"
+                }
+              ],
+              "description": "Renders the component. Subclasses can override this method to provide specific rendering logic."
+            },
+            {
+              "kind": "method",
+              "name": "html",
+              "privacy": "protected",
+              "parameters": [
+                {
+                  "name": "strings",
+                  "type": {
+                    "text": "TemplateStringsArray"
+                  }
+                },
+                {
+                  "name": "values",
+                  "type": {
+                    "text": "unknown[]"
+                  }
+                }
+              ]
+            }
+          ],
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "BaseElement",
+          "declaration": {
+            "name": "BaseElement",
+            "module": "src/components/BaseElement/BaseElement.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/components/x-time/x-time.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "A custom element that displays the current time.",
+          "name": "XTime",
+          "members": [
+            {
+              "kind": "field",
+              "name": "interval",
+              "type": {
+                "text": "ReturnType<typeof setInterval> | undefined"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "render",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "_options",
+                  "type": {
+                    "text": "RenderOptions"
+                  },
+                  "description": "The options for rendering"
+                }
+              ],
+              "description": "Renders the component. Subclasses can override this method to provide specific rendering logic.",
+              "inheritedFrom": {
+                "name": "BaseElement",
+                "module": "src/components/BaseElement/BaseElement.ts"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "html",
+              "privacy": "protected",
+              "parameters": [
+                {
+                  "name": "strings",
+                  "type": {
+                    "text": "TemplateStringsArray"
+                  }
+                },
+                {
+                  "name": "values",
+                  "type": {
+                    "text": "unknown[]"
+                  }
+                }
+              ],
+              "inheritedFrom": {
+                "name": "BaseElement",
+                "module": "src/components/BaseElement/BaseElement.ts"
+              }
+            }
+          ],
+          "superclass": {
+            "name": "BaseElement",
+            "module": "/src/components/BaseElement/BaseElement"
+          },
+          "tagName": "x-time",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "XTime",
+          "declaration": {
+            "name": "XTime",
+            "module": "src/components/x-time/x-time.ts"
+          }
+        }
+      ]
+    }
+  ]
+}

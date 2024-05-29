@@ -27,9 +27,6 @@ export class XTime extends BaseElement {
   }
 }
 
-if (!customElements?.get('x-time')) {
-  customElements?.define('x-time', XTime);
-}
 
 declare global {
   interface HTMLElementTagNameMap {

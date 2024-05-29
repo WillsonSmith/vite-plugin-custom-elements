@@ -54,6 +54,12 @@ const transformImportedHtmlPlugin = () => {
 import {glob} from 'glob';
 import ts  from 'typescript';
 
+import { dynamicImportTs } from './plugin/dynamicImportTs';
+
+function html(strings: TemplateStringsArray, ...values: unknown[]) {
+    return String.raw({ raw: strings }, ...values);
+  }
+
 const htmlPlugin = ({
   rootDir = process.cwd(),
   componentsDir = 'components',
@@ -128,12 +134,22 @@ const htmlPlugin = ({
         isCustomElement(getTagName(el)),
       );
 
-      // for (const element of customElements) {
-      //   console.log(availableElements.find(el => el.tagName === getTagName(element)))
-      // }
-
       for (const element of customElements) {
         try {
+
+          const available = availableElements.find(el => el.tagName === getTagName(element));
+          if (available) {
+            const modulePath = (path + available.path).split(rootDir).join('');
+            const module = await dynamicImportTs(modulePath);
+            console.log(module[available.className]);
+            const ElementClass = module[available.className];
+            const n = new ElementClass();
+            const markup = n.render({
+              html
+            })
+            console.log(markup);
+          }
+
           const { html: htmlFile, script: scriptFile } =
             await readComponentFile({
               rootDir: path,

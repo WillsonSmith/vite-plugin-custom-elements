@@ -3,15 +3,19 @@ import { create } from '@custom-elements-manifest/analyzer';
 import {
   appendChild,
   createElement,
+  createScript,
   findElement,
   findElements,
+  getAttribute,
   getAttributes,
   getChildNodes,
   getParentNode,
   getTagName,
   insertBefore,
+  isTextNode,
   remove,
   setAttribute,
+  setTextContent,
 } from '@web/parse5-utils';
 import {
   CustomElementDeclaration,
@@ -22,7 +26,7 @@ import { glob } from 'glob';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, parseFragment, serialize } from 'parse5';
-import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
+import { Document, DocumentFragment } from 'parse5/dist/tree-adapters/default';
 import ts from 'typescript';
 
 import { renderCustomElement } from './render/renderCustomElement';
@@ -67,39 +71,126 @@ function transformIndex(options: PluginOptions) {
   return async (content: string) => {
     const doc = parse(content);
     const body = findElement(doc, findTag('body'));
-    const customElements = findElements(doc, (el) => {
+
+    const customElements: Element[] = findElements(doc, (el) => {
       return isCustomElement(getTagName(el));
     });
 
-    const scripts = await gatherScripts(projectPath);
-    const tsSourceFiles = await generateTSSourceFiles(scripts);
+    await replaceContentWithCERendered(customElements, projectPath);
 
-    if (tsSourceFiles.status === 'success') {
-      const manifest = generateSourceManifest(tsSourceFiles.result);
-      const customElementModules = gatherAvailableCustomElements(manifest);
-
-      // Begin element loop
-      for (const element of customElements) {
-        const available = customElementModules.find((mod) => {
-          return mod.tagName === getTagName(element);
-        });
-
-        if (!available) continue;
-
-        const modPath = path.join(cwd, available.path);
-        const markup = await renderCustomElement(available.className, modPath);
-
-        if (markup.status === 'success') {
-          replaceElement(
-            element,
-            copyWithElementChildren(element, markup.text),
-          );
-        }
-      }
-    }
+    await replaceContentWithHTMLElements(
+      doc,
+      customElements,
+      projectPath,
+      options.elementDir,
+    );
 
     return serialize(doc);
   };
+}
+
+async function replaceContentWithHTMLElements(
+  doc: Document,
+  customElements: Element[],
+  projectPath: string,
+  elementDir: string,
+) {
+  const htmlElements = await glob(`${projectPath}/${elementDir}/**/*-*.html`);
+
+  const styles: Element[] = [];
+  const scripts: Element[] = [];
+
+  for (const element of customElements) {
+    const thisOne = htmlElements.find((e) => {
+      return e.includes(getTagName(element));
+    });
+    if (!thisOne) continue;
+
+    const markup = await readFile(thisOne, 'utf8');
+    const fragment = parseFragment(markup);
+
+    styles.push(...findElements(fragment, findTag('style')));
+    scripts.push(...findElements(fragment, findTag('script')));
+  }
+
+  const styleSet = new Set<string>();
+
+  for (const style of styles) {
+    const content = getChildNodes(style)[0];
+    if (isTextNode(content)) {
+      styleSet.add(content.value);
+    }
+  }
+
+  const scriptMap = new Map();
+  const scriptContents = new Set<string>();
+
+  for (const script of scripts) {
+    const src = getAttribute(script, 'src');
+    if (src && !scriptMap.has(src)) {
+      scriptMap.set(src, script);
+    } else {
+      const content = getChildNodes(script)[0];
+      if (content && isTextNode(content)) {
+        scriptContents.add(content.value);
+      }
+    }
+  }
+
+  const styleTags = Array.from(styleSet).map((styleContent) => {
+    const style = createElement('style');
+    style.childNodes = [
+      {
+        nodeName: '#text',
+        value: styleContent,
+        parentNode: null,
+        attrs: [],
+        __location: undefined,
+      },
+    ];
+    return style;
+  });
+
+  for (const tag of styleTags) {
+    appendChild(findElement(doc, findTag('head')), tag);
+  }
+
+  const scriptTags = Array.from(scriptContents).map((scriptContent) => {
+    return createScript({ type: 'module' }, scriptContent);
+  });
+
+  for (const tag of scriptTags) {
+    appendChild(findElement(doc, findTag('body')), tag);
+  }
+}
+
+async function replaceContentWithCERendered(
+  customElements: Element[],
+  projectPath: string,
+) {
+  const scripts = await gatherScripts(projectPath);
+  const tsSourceFiles = await generateTSSourceFiles(scripts);
+
+  if (tsSourceFiles.status === 'success') {
+    const manifest = generateSourceManifest(tsSourceFiles.result);
+    const customElementModules = gatherAvailableCustomElements(manifest);
+
+    // Begin element loop
+    for (const element of customElements) {
+      const available = customElementModules.find((mod) => {
+        return mod.tagName === getTagName(element);
+      });
+
+      if (!available) continue;
+
+      const modPath = path.join(cwd, available.path);
+      const markup = await renderCustomElement(available.className, modPath);
+
+      if (markup.status === 'success') {
+        replaceElement(element, copyWithElementChildren(element, markup.text));
+      }
+    }
+  }
 }
 
 function replaceElement(element: Element, newElement: Element) {
@@ -127,7 +218,6 @@ function replaceSlotWithContent(
 
   if (slot) {
     const newElementSlot = findElement(element, findTag('slot'));
-    console.log(newElementSlot);
     for (const child of children) {
       const slotParent = getParentNode(newElementSlot);
       insertBefore(slotParent, child, slot);
@@ -156,7 +246,9 @@ function copyAttributes(currentElement: Element, newElement: Element) {
 }
 
 async function gatherScripts(projectPath: string) {
-  const files = await glob(`${projectPath}/**/*.{ts,js}`);
+  const files = await glob(`${projectPath}/**/*.{ts,js}`, {
+    ignore: 'node_modules/**',
+  });
   return files.map((path) => {
     return { path, file: readFile(path, 'utf8') };
   });

@@ -172,6 +172,28 @@ async function replaceContentWithHTMLElements(
     }
   }
 
+  const scriptContents = new Set<string>();
+  // These will also need the relative path of the component html s/t can transform
+  for (const [tag, scriptList] of scripts) {
+    for (const script of scriptList) {
+      const src = getAttribute(script, 'src');
+      if (src) {
+        console.log(src);
+      } else {
+        const content = getChildNodes(script)[0];
+        if (content && isTextNode(content)) {
+          console.log(tag, content.value);
+          scriptContents.add(content.value);
+        }
+      }
+    }
+  }
+
+  appendChild(
+    findElement(doc, findTag('body')),
+    createScript({ type: 'module' }, Array.from(scriptContents).join('\n')),
+  );
+
   const styleTags = Array.from(styleSet).map((content) => {
     const style = createElement('style');
 

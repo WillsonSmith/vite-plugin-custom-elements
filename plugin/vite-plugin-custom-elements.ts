@@ -27,6 +27,8 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, parseFragment, serialize } from 'parse5';
 import { Document, DocumentFragment } from 'parse5/dist/tree-adapters/default';
+import postcss from 'postcss';
+import prefixSelector from 'postcss-prefix-selector';
 import ts from 'typescript';
 
 import { renderCustomElement } from './render/renderCustomElement';
@@ -93,6 +95,7 @@ function transformStyles(fragment: DocumentFragment, tagName: string) {
   const styles = findElements(fragment, findTag('style'));
   console.log(styles, tagName);
 }
+
 async function replaceContentWithHTMLElements(
   doc: Document,
   customElements: Element[],
@@ -101,8 +104,9 @@ async function replaceContentWithHTMLElements(
 ) {
   const htmlElements = await glob(`${projectPath}/${elementDir}/**/*-*.html`);
 
-  const styles: Element[] = [];
-  const scripts: Element[] = [];
+  const styles = new Map<string, Element[]>();
+  const scripts = new Map<string, Element[]>();
+  // const styles: Element[] = [];
 
   for (const element of customElements) {
     const thisOne = htmlElements.find((e) => {
@@ -113,19 +117,14 @@ async function replaceContentWithHTMLElements(
     const markup = await readFile(thisOne, 'utf8');
     const fragment = parseFragment(markup);
 
-    const style = findElements(fragment, findTag('style'));
-    const script = findElements(fragment, findTag('script'));
+    const styleTags = findElements(fragment, findTag('style'));
+    const scriptTags = findElements(fragment, findTag('script'));
 
-    // need to transform the styles here
-    styles.push(...style);
-    scripts.push(...script);
+    styles.set(getTagName(element), styleTags);
+    scripts.set(getTagName(element), scriptTags);
 
-    for (const s of style) {
-      remove(s);
-    }
-    for (const s of script) {
-      remove(s);
-    }
+    styleTags.forEach((style) => remove(style));
+    scriptTags.forEach((script) => remove(script));
 
     replaceElement(
       element,
@@ -135,34 +134,42 @@ async function replaceContentWithHTMLElements(
 
   const styleSet = new Set<string>();
 
-  for (const style of styles) {
-    const content = getChildNodes(style)[0];
-    if (isTextNode(content)) {
-      styleSet.add(content.value);
-    }
-  }
-
-  const scriptMap = new Map();
-  const scriptContents = new Set<string>();
-
-  for (const script of scripts) {
-    const src = getAttribute(script, 'src');
-    if (src && !scriptMap.has(src)) {
-      scriptMap.set(src, script);
-    } else {
-      const content = getChildNodes(script)[0];
-      if (content && isTextNode(content)) {
-        scriptContents.add(content.value);
+  for (const [tag, st] of styles) {
+    for (const t of st) {
+      const child = getChildNodes(t)[0];
+      if (child && isTextNode(child)) {
+        const transformed = await postcss([
+          prefixSelector({
+            prefix: tag,
+            transform: (
+              prefix: string,
+              selector: string,
+              prefixedSelector: string,
+            ) => {
+              if (selector.startsWith('body') || selector.startsWith('html')) {
+                return selector;
+              }
+              if (selector.startsWith(':host')) {
+                return prefix;
+              }
+              return prefixedSelector;
+            },
+          }),
+        ])
+          .process(child.value)
+          .then((result) => result.css);
+        styleSet.add(transformed);
       }
     }
   }
 
-  const styleTags = Array.from(styleSet).map((styleContent) => {
+  const styleTags = Array.from(styleSet).map((content) => {
     const style = createElement('style');
+
     style.childNodes = [
       {
         nodeName: '#text',
-        value: styleContent,
+        value: content,
         parentNode: null,
         attrs: [],
         __location: undefined,
@@ -175,13 +182,28 @@ async function replaceContentWithHTMLElements(
     appendChild(findElement(doc, findTag('head')), tag);
   }
 
-  const scriptTags = Array.from(scriptContents).map((scriptContent) => {
-    return createScript({ type: 'module' }, scriptContent);
-  });
-
-  for (const tag of scriptTags) {
-    appendChild(findElement(doc, findTag('body')), tag);
-  }
+  // const scriptMap = new Map();
+  // const scriptContents = new Set<string>();
+  //
+  // for (const script of scripts) {
+  //   const src = getAttribute(script, 'src');
+  //   if (src && !scriptMap.has(src)) {
+  //     scriptMap.set(src, script);
+  //   } else {
+  //     const content = getChildNodes(script)[0];
+  //     if (content && isTextNode(content)) {
+  //       scriptContents.add(content.value);
+  //     }
+  //   }
+  // }
+  //
+  // const scriptTags = Array.from(scriptContents).map((scriptContent) => {
+  //   return createScript({ type: 'module' }, scriptContent);
+  // });
+  //
+  // for (const tag of scriptTags) {
+  //   appendChild(findElement(doc, findTag('body')), tag);
+  // }
 }
 
 async function replaceContentWithCERendered(

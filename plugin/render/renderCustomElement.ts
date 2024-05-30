@@ -2,10 +2,17 @@ import { build as esbuild } from 'esbuild';
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
 
+type RenderCustomElementResult =
+  | {
+      status: 'success';
+      text: string;
+    }
+  | { status: 'error'; error: string };
+
 export async function renderCustomElement(
   className: string,
   elementModulePath: string,
-): Promise<string | { error: string }> {
+): Promise<RenderCustomElementResult> {
   const transpilePath = `${process.cwd()}/._tmp-wc/${path.basename(elementModulePath).replace('ts', 'js')}`;
 
   await esbuild({
@@ -30,8 +37,20 @@ export async function renderCustomElement(
       workerData: [className, transpilePath],
     });
 
-    worker.on('message', resolve);
-    worker.on('error', () => reject({ error: 'No markup rendered' }));
+    worker.on('message', (markup) => {
+      resolve({
+        status: 'success',
+        text: markup,
+      });
+    });
+
+    worker.on('error', () => {
+      resolve({
+        status: 'error',
+        error: 'No markup rendered',
+      });
+    });
+
     worker.on('exit', (code) => {
       if (code !== 0) {
         reject(new Error(`Worker stopped with exit code ${code}`));

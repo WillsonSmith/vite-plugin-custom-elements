@@ -1,6 +1,19 @@
 // @ts-expect-error `create` exists but is not in the types.
 import { create } from '@custom-elements-manifest/analyzer';
 import {
+  appendChild,
+  createElement,
+  findElement,
+  findElements,
+  getAttributes,
+  getChildNodes,
+  getParentNode,
+  getTagName,
+  insertBefore,
+  remove,
+  setAttribute,
+} from '@web/parse5-utils';
+import {
   CustomElementDeclaration,
   Declaration,
   Package,
@@ -8,7 +21,11 @@ import {
 import { glob } from 'glob';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { parse, parseFragment, serialize } from 'parse5';
+import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
 import ts from 'typescript';
+
+import { renderCustomElement } from './render/renderCustomElement';
 
 type PluginOptions = {
   root: string;
@@ -22,22 +39,120 @@ export const pluginCustomElement = (options: PluginOptions) => {
 };
 
 const cwd = process.cwd();
+
+function isCustomElement(tagName: string) {
+  const reserved = [
+    'annotation-xml',
+    'color-profile',
+    'font-face',
+    'font-face-src',
+    'font-face-uri',
+    'font-face-format',
+    'font-face-name',
+    'missing-glyph',
+  ];
+  return tagName.includes('-') && !reserved.includes(tagName);
+}
+
+function findTag(tagName: string) {
+  return (el: Element) => {
+    return getTagName(el) === tagName;
+  };
+}
+
 function transformIndex(options: PluginOptions) {
   const normalizedRoot = options.root.split(cwd).join('');
   const projectPath = path.join(cwd, normalizedRoot);
 
   return async (content: string) => {
+    const doc = parse(content);
+    const body = findElement(doc, findTag('body'));
+    const customElements = findElements(doc, (el) => {
+      return isCustomElement(getTagName(el));
+    });
+
     const scripts = await gatherScripts(projectPath);
     const tsSourceFiles = await generateTSSourceFiles(scripts);
 
     if (tsSourceFiles.status === 'success') {
       const manifest = generateSourceManifest(tsSourceFiles.result);
-      const customElements = gatherAvailableCustomElements(manifest);
-      console.log(customElements);
+      const customElementModules = gatherAvailableCustomElements(manifest);
+
+      // Begin element loop
+      for (const element of customElements) {
+        const available = customElementModules.find((mod) => {
+          return mod.tagName === getTagName(element);
+        });
+
+        if (!available) continue;
+
+        const modPath = path.join(cwd, available.path);
+        const markup = await renderCustomElement(available.className, modPath);
+
+        if (markup.status === 'success') {
+          replaceElement(
+            element,
+            copyWithElementChildren(element, markup.text),
+          );
+        }
+      }
     }
 
-    return content;
+    return serialize(doc);
   };
+}
+
+function replaceElement(element: Element, newElement: Element) {
+  insertBefore(getParentNode(element), newElement, element);
+  remove(element);
+}
+
+function copyWithElementChildren(element: Element, markupText: string) {
+  const markupFragment = parseFragment(markupText);
+  const newElement = createElement(getTagName(element));
+
+  copyAttributes(element, newElement);
+  moveChildren(markupFragment, newElement);
+  replaceSlotWithContent(markupFragment, newElement, getChildNodes(element));
+
+  return newElement;
+}
+
+function replaceSlotWithContent(
+  fragment: DocumentFragment,
+  element: Element,
+  children: Element[],
+) {
+  const slot = findElement(fragment, findTag('slot'));
+
+  if (slot) {
+    const newElementSlot = findElement(element, findTag('slot'));
+    console.log(newElementSlot);
+    for (const child of children) {
+      const slotParent = getParentNode(newElementSlot);
+      insertBefore(slotParent, child, slot);
+    }
+
+    remove(slot);
+  }
+
+  return element;
+}
+
+function moveChildren(currentElement: DocumentFragment, newElement: Element) {
+  const children = getChildNodes(currentElement);
+  for (const child of children) {
+    appendChild(newElement, child);
+  }
+  return newElement;
+}
+
+function copyAttributes(currentElement: Element, newElement: Element) {
+  const attrs = Object.entries(getAttributes(currentElement));
+  for (const [key, value] of attrs) {
+    setAttribute(newElement, key, value);
+  }
+  return newElement;
 }
 
 async function gatherScripts(projectPath: string) {

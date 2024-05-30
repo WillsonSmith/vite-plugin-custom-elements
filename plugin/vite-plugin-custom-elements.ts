@@ -89,6 +89,10 @@ function transformIndex(options: PluginOptions) {
   };
 }
 
+function transformStyles(fragment: DocumentFragment, tagName: string) {
+  const styles = findElements(fragment, findTag('style'));
+  console.log(styles, tagName);
+}
 async function replaceContentWithHTMLElements(
   doc: Document,
   customElements: Element[],

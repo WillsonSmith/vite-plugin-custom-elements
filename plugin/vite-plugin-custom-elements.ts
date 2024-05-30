@@ -109,8 +109,24 @@ async function replaceContentWithHTMLElements(
     const markup = await readFile(thisOne, 'utf8');
     const fragment = parseFragment(markup);
 
-    styles.push(...findElements(fragment, findTag('style')));
-    scripts.push(...findElements(fragment, findTag('script')));
+    const style = findElements(fragment, findTag('style'));
+    const script = findElements(fragment, findTag('script'));
+
+    // need to transform the styles here
+    styles.push(...style);
+    scripts.push(...script);
+
+    for (const s of style) {
+      remove(s);
+    }
+    for (const s of script) {
+      remove(s);
+    }
+
+    replaceElement(
+      element,
+      copyWithElementChildren(element, serialize(fragment)),
+    );
   }
 
   const styleSet = new Set<string>();

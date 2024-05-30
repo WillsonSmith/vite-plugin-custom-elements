@@ -17,23 +17,27 @@ type PluginOptions = {
 export const pluginCustomElement = (options: PluginOptions) => {
   return {
     name: 'plugin-custom-element',
-    transformIndexHTML: transformIndex(options),
+    transformIndexHtml: transformIndex(options),
   };
 };
 
 const cwd = process.cwd();
-async function transformIndex(options: PluginOptions) {
+function transformIndex(options: PluginOptions) {
   const normalizedRoot = options.root.split(cwd).join('');
   const projectPath = path.join(cwd, normalizedRoot);
 
-  const scripts = await gatherScripts(projectPath);
-  const tsSourceFiles = await generateTSSourceFiles(scripts);
+  return async (content: string) => {
+    const scripts = await gatherScripts(projectPath);
+    const tsSourceFiles = await generateTSSourceFiles(scripts);
 
-  if (tsSourceFiles.status === 'success') {
-    const manifest = generateSourceManifest(tsSourceFiles.result);
-    const customElements = gatherAvailableCustomElements(manifest);
-    console.log(customElements);
-  }
+    if (tsSourceFiles.status === 'success') {
+      const manifest = generateSourceManifest(tsSourceFiles.result);
+      const customElements = gatherAvailableCustomElements(manifest);
+      console.log(customElements);
+    }
+
+    return content;
+  };
 }
 
 async function gatherScripts(projectPath: string) {
@@ -83,16 +87,14 @@ function generateSourceManifest(sources: ts.SourceFile[]) {
   return create({ modules: sources }) as Package;
 }
 
-type CustomElementModule = {
+type AvailableElement = {
   path: string;
   tagName: string;
   className: string;
 };
 
-function gatherAvailableCustomElements(
-  manifest: Package,
-): CustomElementModule[] {
-  const customElements: CustomElementModule[] = [];
+function gatherAvailableCustomElements(manifest: Package): AvailableElement[] {
+  const customElements: AvailableElement[] = [];
 
   for (const module of manifest.modules) {
     if (!module.exports) continue;
@@ -118,6 +120,8 @@ function gatherAvailableCustomElements(
   return customElements;
 }
 
+/** filter Custom Element Manifest `Declaration[]` to `CustomElementDeclaration[]`.
+ * @param {Declaration[]} declarations - An array of declarations from the custom element manifest generator.*/
 function getCEDeclarations(
   declarations: Declaration[],
 ): CustomElementDeclaration[] {

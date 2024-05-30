@@ -1,0 +1,363 @@
+// @ts-expect-error `create` exists but is not in the types.
+import { create } from '@custom-elements-manifest/analyzer';
+import {
+  appendChild,
+  createElement,
+  createScript,
+  findElement,
+  findElements,
+  getAttribute,
+  getAttributes,
+  getChildNodes,
+  getParentNode,
+  getTagName,
+  insertBefore,
+  isTextNode,
+  remove,
+  setAttribute,
+  setTextContent,
+} from '@web/parse5-utils';
+import {
+  CustomElementDeclaration,
+  Declaration,
+  Package,
+} from 'custom-elements-manifest';
+import { glob } from 'glob';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { parse, parseFragment, serialize } from 'parse5';
+import { Document, DocumentFragment } from 'parse5/dist/tree-adapters/default';
+import ts from 'typescript';
+
+import { renderCustomElement } from './render/renderCustomElement';
+
+type PluginOptions = {
+  root: string;
+  elementDir: string;
+};
+export const pluginCustomElement = (options: PluginOptions) => {
+  return {
+    name: 'plugin-custom-element',
+    transformIndexHtml: transformIndex(options),
+  };
+};
+
+const cwd = process.cwd();
+
+function isCustomElement(tagName: string) {
+  const reserved = [
+    'annotation-xml',
+    'color-profile',
+    'font-face',
+    'font-face-src',
+    'font-face-uri',
+    'font-face-format',
+    'font-face-name',
+    'missing-glyph',
+  ];
+  return tagName.includes('-') && !reserved.includes(tagName);
+}
+
+function findTag(tagName: string) {
+  return (el: Element) => {
+    return getTagName(el) === tagName;
+  };
+}
+
+function transformIndex(options: PluginOptions) {
+  const normalizedRoot = options.root.split(cwd).join('');
+  const projectPath = path.join(cwd, normalizedRoot);
+
+  return async (content: string) => {
+    const doc = parse(content);
+    const body = findElement(doc, findTag('body'));
+
+    const customElements: Element[] = findElements(doc, (el) => {
+      return isCustomElement(getTagName(el));
+    });
+
+    await replaceContentWithCERendered(customElements, projectPath);
+
+    await replaceContentWithHTMLElements(
+      doc,
+      customElements,
+      projectPath,
+      options.elementDir,
+    );
+
+    return serialize(doc);
+  };
+}
+
+function transformStyles(fragment: DocumentFragment, tagName: string) {
+  const styles = findElements(fragment, findTag('style'));
+  console.log(styles, tagName);
+}
+async function replaceContentWithHTMLElements(
+  doc: Document,
+  customElements: Element[],
+  projectPath: string,
+  elementDir: string,
+) {
+  const htmlElements = await glob(`${projectPath}/${elementDir}/**/*-*.html`);
+
+  const styles: Element[] = [];
+  const scripts: Element[] = [];
+
+  for (const element of customElements) {
+    const thisOne = htmlElements.find((e) => {
+      return e.includes(getTagName(element));
+    });
+    if (!thisOne) continue;
+
+    const markup = await readFile(thisOne, 'utf8');
+    const fragment = parseFragment(markup);
+
+    const style = findElements(fragment, findTag('style'));
+    const script = findElements(fragment, findTag('script'));
+
+    // need to transform the styles here
+    styles.push(...style);
+    scripts.push(...script);
+
+    for (const s of style) {
+      remove(s);
+    }
+    for (const s of script) {
+      remove(s);
+    }
+
+    replaceElement(
+      element,
+      copyWithElementChildren(element, serialize(fragment)),
+    );
+  }
+
+  const styleSet = new Set<string>();
+
+  for (const style of styles) {
+    const content = getChildNodes(style)[0];
+    if (isTextNode(content)) {
+      styleSet.add(content.value);
+    }
+  }
+
+  const scriptMap = new Map();
+  const scriptContents = new Set<string>();
+
+  for (const script of scripts) {
+    const src = getAttribute(script, 'src');
+    if (src && !scriptMap.has(src)) {
+      scriptMap.set(src, script);
+    } else {
+      const content = getChildNodes(script)[0];
+      if (content && isTextNode(content)) {
+        scriptContents.add(content.value);
+      }
+    }
+  }
+
+  const styleTags = Array.from(styleSet).map((styleContent) => {
+    const style = createElement('style');
+    style.childNodes = [
+      {
+        nodeName: '#text',
+        value: styleContent,
+        parentNode: null,
+        attrs: [],
+        __location: undefined,
+      },
+    ];
+    return style;
+  });
+
+  for (const tag of styleTags) {
+    appendChild(findElement(doc, findTag('head')), tag);
+  }
+
+  const scriptTags = Array.from(scriptContents).map((scriptContent) => {
+    return createScript({ type: 'module' }, scriptContent);
+  });
+
+  for (const tag of scriptTags) {
+    appendChild(findElement(doc, findTag('body')), tag);
+  }
+}
+
+async function replaceContentWithCERendered(
+  customElements: Element[],
+  projectPath: string,
+) {
+  const scripts = await gatherScripts(projectPath);
+  const tsSourceFiles = await generateTSSourceFiles(scripts);
+
+  if (tsSourceFiles.status === 'success') {
+    const manifest = generateSourceManifest(tsSourceFiles.result);
+    const customElementModules = gatherAvailableCustomElements(manifest);
+
+    // Begin element loop
+    for (const element of customElements) {
+      const available = customElementModules.find((mod) => {
+        return mod.tagName === getTagName(element);
+      });
+
+      if (!available) continue;
+
+      const modPath = path.join(cwd, available.path);
+      const markup = await renderCustomElement(available.className, modPath);
+
+      if (markup.status === 'success') {
+        replaceElement(element, copyWithElementChildren(element, markup.text));
+      }
+    }
+  }
+}
+
+function replaceElement(element: Element, newElement: Element) {
+  insertBefore(getParentNode(element), newElement, element);
+  remove(element);
+}
+
+function copyWithElementChildren(element: Element, markupText: string) {
+  const markupFragment = parseFragment(markupText);
+  const newElement = createElement(getTagName(element));
+
+  copyAttributes(element, newElement);
+  moveChildren(markupFragment, newElement);
+  replaceSlotWithContent(markupFragment, newElement, getChildNodes(element));
+
+  return newElement;
+}
+
+function replaceSlotWithContent(
+  fragment: DocumentFragment,
+  element: Element,
+  children: Element[],
+) {
+  const slot = findElement(fragment, findTag('slot'));
+
+  if (slot) {
+    const newElementSlot = findElement(element, findTag('slot'));
+    for (const child of children) {
+      const slotParent = getParentNode(newElementSlot);
+      insertBefore(slotParent, child, slot);
+    }
+
+    remove(slot);
+  }
+
+  return element;
+}
+
+function moveChildren(currentElement: DocumentFragment, newElement: Element) {
+  const children = getChildNodes(currentElement);
+  for (const child of children) {
+    appendChild(newElement, child);
+  }
+  return newElement;
+}
+
+function copyAttributes(currentElement: Element, newElement: Element) {
+  const attrs = Object.entries(getAttributes(currentElement));
+  for (const [key, value] of attrs) {
+    setAttribute(newElement, key, value);
+  }
+  return newElement;
+}
+
+async function gatherScripts(projectPath: string) {
+  const files = await glob(`${projectPath}/**/*.{ts,js}`, {
+    ignore: 'node_modules/**',
+  });
+  return files.map((path) => {
+    return { path, file: readFile(path, 'utf8') };
+  });
+}
+
+type TSSourceFileResponse = {
+  status: 'success' | 'error';
+  result: ts.SourceFile[];
+};
+
+async function generateTSSourceFiles(
+  sources: { path: string; file: Promise<string> }[],
+): Promise<TSSourceFileResponse> {
+  const tsSources: ts.SourceFile[] = [];
+
+  try {
+    for (const source of sources) {
+      await source.file.then((file) => {
+        tsSources.push(
+          ts.createSourceFile(
+            source.path.split(cwd).join(''),
+            file,
+            ts.ScriptTarget.ES2020,
+            true,
+          ),
+        );
+      });
+    }
+    return {
+      status: 'success',
+      result: tsSources,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      status: 'error',
+      result: [],
+    };
+  }
+}
+
+function generateSourceManifest(sources: ts.SourceFile[]) {
+  return create({ modules: sources }) as Package;
+}
+
+type AvailableElement = {
+  path: string;
+  tagName: string;
+  className: string;
+};
+
+function gatherAvailableCustomElements(manifest: Package): AvailableElement[] {
+  const customElements: AvailableElement[] = [];
+
+  for (const module of manifest.modules) {
+    if (!module.exports) continue;
+    if (!module.declarations) continue;
+
+    const customElementsDeclarations = getCEDeclarations(module.declarations);
+    for (const exp of module.exports) {
+      const tag = customElementsDeclarations.find(
+        (d) => d.name === exp.name,
+      )?.tagName;
+
+      const mod = exp.declaration.module;
+      if (!(mod && tag)) continue;
+
+      customElements.push({
+        path: mod,
+        tagName: tag,
+        className: exp.name,
+      });
+    }
+  }
+
+  return customElements;
+}
+
+/** filter Custom Element Manifest `Declaration[]` to `CustomElementDeclaration[]`.
+ * @param {Declaration[]} declarations - An array of declarations from the custom element manifest generator.*/
+function getCEDeclarations(
+  declarations: Declaration[],
+): CustomElementDeclaration[] {
+  const customElements = [];
+  for (const declaration of declarations) {
+    if (!('customElement' in declaration)) continue;
+    if (declaration.kind === 'mixin') continue;
+    if (!declaration.tagName) continue;
+    customElements.push(declaration);
+  }
+  return customElements;
+}

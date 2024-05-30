@@ -25,7 +25,8 @@ import { parse, parseFragment, serialize } from 'parse5';
 import ts from 'typescript';
 import { defineConfig } from 'vite';
 
-import { renderCustomElement } from './plugin/renderCustomElement';
+import { renderCustomElement } from './plugin/render/renderCustomElement';
+import { pluginCustomElement } from './plugin/vite-plugin-custom-elements';
 
 const transformImportedHtmlPlugin = () => {
   return {
@@ -282,6 +283,7 @@ export default defineConfig({
   },
   plugins: [
     transformImportedHtmlPlugin(),
-    htmlPlugin({ rootDir: './src', componentsDir: 'components' }),
+    // htmlPlugin({ rootDir: './src', componentsDir: 'components' }),
+    pluginCustomElement({ root: './src', elementDir: 'components' }),
   ],
 });

@@ -1,3 +1,5 @@
+// @ts-expect-error `create` exists but is not in the types.
+import { create } from '@custom-elements-manifest/analyzer';
 import {
   appendChild,
   createElement,
@@ -15,16 +17,15 @@ import {
   remove,
   setAttribute,
 } from '@web/parse5-utils';
-
-import type {Package} from 'custom-elements-manifest';
-
-// @ts-expect-error `create` exists but is not in the types.
-import {create} from  '@custom-elements-manifest/analyzer';
-
+import type { Package } from 'custom-elements-manifest';
+import { glob } from 'glob';
 import { readFile } from 'node:fs/promises';
-import { parse, parseFragment, serialize } from 'parse5';
 import path from 'node:path';
+import { parse, parseFragment, serialize } from 'parse5';
+import ts from 'typescript';
 import { defineConfig } from 'vite';
+
+import { renderCustomElement } from './plugin/renderCustomElement';
 
 const transformImportedHtmlPlugin = () => {
   return {
@@ -54,16 +55,6 @@ const transformImportedHtmlPlugin = () => {
   };
 };
 
-import {glob} from 'glob';
-import ts  from 'typescript';
-
-import { dynamicImportTs } from './plugin/dynamicImportTs';
-
-function html(strings: TemplateStringsArray, ...values: unknown[]) {
-    return String.raw({ raw: strings }, ...values);
-  }
-
-
 const htmlPlugin = ({
   rootDir = process.cwd(),
   componentsDir = 'components',
@@ -74,17 +65,18 @@ const htmlPlugin = ({
   return {
     name: 'html-transform',
     transformIndexHtml: async (htmlContent: string) => {
-
       // const availableElements = create()
 
       const cwd = process.cwd();
 
       const sourcePath = `${cwd}/${rootDir?.split(cwd).join('') || ''}`;
 
-      const tsFiles = (await glob(`${sourcePath}/**/*.ts`, {ignore: 'node_modules/**'})).map(file => {
+      const tsFiles = (
+        await glob(`${sourcePath}/**/*.ts`, { ignore: 'node_modules/**' })
+      ).map((file) => {
         return {
           path: file,
-          source: readFile(file, 'utf8')
+          source: readFile(file, 'utf8'),
         };
       });
 
@@ -92,44 +84,46 @@ const htmlPlugin = ({
       for (const file of tsFiles) {
         srcFiles.push(
           ts.createSourceFile(
-            file.path.split(process.cwd()).join(''), 
-            await file.source, 
+            file.path.split(process.cwd()).join(''),
+            await file.source,
             ts.ScriptTarget.ES2020,
-            true
-          ))
+            true,
+          ),
+        );
       }
 
       type AvailableElement = {
-        tagName: string,
-        path: string,
-        className: string
-      }
+        tagName: string;
+        path: string;
+        className: string;
+      };
 
       const availableElements: AvailableElement[] = [];
 
-      const manifest: Package = create({modules: srcFiles});
+      const manifest: Package = create({ modules: srcFiles });
 
       for (const module of manifest.modules) {
         if (!module.declarations) continue;
         for (const declaration of module.declarations) {
           if ('customElement' in declaration && declaration.tagName) {
-            const exports = module.exports?.find(mod => mod.name === declaration.name);
+            const exports = module.exports?.find(
+              (mod) => mod.name === declaration.name,
+            );
             if (exports !== undefined) {
               const tagName = declaration.tagName;
               const path = exports.declaration.module;
               const className = exports.name;
               if (tagName && path && className) {
-              availableElements.push({
-                tagName,
-                path,
-                className
-              })
+                availableElements.push({
+                  tagName,
+                  path,
+                  className,
+                });
               }
             }
           }
         }
       }
-
 
       const doc = parse(htmlContent);
       const body = findElement(doc, findTag('html'));
@@ -140,27 +134,35 @@ const htmlPlugin = ({
 
       for (const element of customElements) {
         try {
-
           let htmlFile: string | undefined;
           let scriptSrc: string | undefined;
 
-          const available = availableElements.find(el => el.tagName === getTagName(element));
+          const available = availableElements.find(
+            (el) => el.tagName === getTagName(element),
+          );
           if (available) {
-            const modulePath = (sourcePath + available.path).split(rootDir).join('');
-            const module = await dynamicImportTs(modulePath);
-            const ElementClass = module[available.className];
-            const n = new ElementClass();
-            const markup = n.render({
-              html
-            });
+            const modulePath = (sourcePath + available.path)
+              .split(rootDir)
+              .join('');
 
-            htmlFile = markup;
+            const markup = await renderCustomElement(
+              available.className,
+              modulePath,
+            );
+
+            if (typeof markup === 'string') {
+              htmlFile = markup;
+            }
             scriptSrc = modulePath;
           }
 
           if (!htmlFile) {
-            const htmlComponents = await glob(sourcePath + '/' + componentsDir + '/**/*-*.html');
-            const thisComponent = htmlComponents.find(c => c.includes(getTagName(element)));
+            const htmlComponents = await glob(
+              sourcePath + '/' + componentsDir + '/**/*-*.html',
+            );
+            const thisComponent = htmlComponents.find((c) =>
+              c.includes(getTagName(element)),
+            );
 
             if (thisComponent) {
               const content = await readFile(thisComponent, 'utf8');
@@ -170,7 +172,10 @@ const htmlPlugin = ({
 
               // Change script logic to copy to body if not there. This is important for content that is within the script tag.
               const script = findElement(fragment, (element) => {
-                return getTagName(element) === 'script' && hasAttribute(element, 'src');
+                return (
+                  getTagName(element) === 'script' &&
+                  hasAttribute(element, 'src')
+                );
               });
 
               remove(script);
@@ -192,7 +197,10 @@ const htmlPlugin = ({
             });
 
             if (!scriptExists) {
-              appendChild(body, createElement('script', {src: scriptSrc, type: 'module'}));
+              appendChild(
+                body,
+                createElement('script', { src: scriptSrc, type: 'module' }),
+              );
             }
           }
 
@@ -204,7 +212,6 @@ const htmlPlugin = ({
 
           /* When using a template w/ shadowrootmode="open" it should maintain the template node */
           if (templateNode) {
-
             const newTag = createElement(getTagName(element));
             appendChild(newTag, templateNode);
 
@@ -214,7 +221,6 @@ const htmlPlugin = ({
             insertBefore(getParentNode(element), newTag, element);
             remove(element);
           } else {
-
             const newTag = createElement(getTagName(element));
             for (const [key, value] of Object.entries(getAttributes(element))) {
               setAttribute(newTag, key, value);
@@ -265,7 +271,6 @@ function findTag(tagName: string) {
     return getTagName(el) === tagName;
   };
 }
-
 
 export default defineConfig({
   build: {},

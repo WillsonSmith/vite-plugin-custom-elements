@@ -27,7 +27,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, parseFragment, serialize } from 'parse5';
 import { Document, DocumentFragment } from 'parse5/dist/tree-adapters/default';
-import postcss from 'postcss';
+import postcss, { Rule } from 'postcss';
 import prefixSelector from 'postcss-prefix-selector';
 import ts from 'typescript';
 
@@ -106,7 +106,6 @@ async function replaceContentWithHTMLElements(
 
   const styles = new Map<string, Element[]>();
   const scripts = new Map<string, Element[]>();
-  // const styles: Element[] = [];
 
   for (const element of customElements) {
     const thisOne = htmlElements.find((e) => {
@@ -145,7 +144,17 @@ async function replaceContentWithHTMLElements(
               prefix: string,
               selector: string,
               prefixedSelector: string,
+              _: string,
+              rule: Rule,
             ) => {
+              // If nested selector { a { ... } }
+              if (rule.parent && 'selector' in rule.parent) {
+                const selector = rule.parent.selector as string | undefined;
+                if (selector?.includes(prefix)) {
+                  return selector;
+                }
+              }
+
               if (selector.startsWith('body') || selector.startsWith('html')) {
                 return selector;
               }

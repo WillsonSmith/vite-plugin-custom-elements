@@ -33,6 +33,7 @@ var XLayout = class extends BaseElement {
     return html`
       <style>
         .x-layout {
+          padding: 1rem;
           display: flex;
           flex-direction: column;
           width: 100%;
@@ -50,7 +51,10 @@ var XLayout = class extends BaseElement {
   }
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "layout") {
-      this.querySelector(".x-layout")?.classList.toggle("x-layout--two-column", this.getAttribute("layout") === "two-column");
+      this.querySelector(".x-layout")?.classList.toggle(
+        "x-layout--two-column",
+        this.getAttribute("layout") === "two-column"
+      );
     }
   }
   static {

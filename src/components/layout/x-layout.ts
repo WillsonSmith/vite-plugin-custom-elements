@@ -5,10 +5,9 @@ import { BaseElement, RenderOptions } from '../BaseElement/BaseElement';
  * @element x-layout
  */
 export class XLayout extends BaseElement {
-
   layout?: HTMLElement;
   connectedCallback() {
-    console.log(this.querySelector('.x-layout'))
+    console.log(this.querySelector('.x-layout'));
     this.layout = this.querySelector('.x-layout') || undefined;
   }
 
@@ -18,6 +17,7 @@ export class XLayout extends BaseElement {
     return html`
       <style>
         .x-layout {
+          padding: 1rem;
           display: flex;
           flex-direction: column;
           width: 100%;
@@ -34,9 +34,16 @@ export class XLayout extends BaseElement {
     `;
   }
 
-  attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
+  attributeChangedCallback(
+    name: string,
+    oldValue: string,
+    newValue: string,
+  ): void {
     if (name === 'layout') {
-      this.querySelector('.x-layout')?.classList.toggle('x-layout--two-column', this.getAttribute('layout') === 'two-column')
+      this.querySelector('.x-layout')?.classList.toggle(
+        'x-layout--two-column',
+        this.getAttribute('layout') === 'two-column',
+      );
     }
   }
 
@@ -46,7 +53,6 @@ export class XLayout extends BaseElement {
 if (globalThis.customElements && !customElements?.get('x-layout')) {
   customElements.define('x-layout', XLayout);
 }
-
 
 declare global {
   interface HTMLElementTagNameMap {

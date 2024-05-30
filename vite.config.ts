@@ -1,6 +1,5 @@
 import {
   appendChild,
-  createDocumentFragment,
   createElement,
   findElement,
   findElements,
@@ -19,6 +18,7 @@ import {
 
 import type {Package} from 'custom-elements-manifest';
 
+// @ts-expect-error `create` exists but is not in the types.
 import {create} from  '@custom-elements-manifest/analyzer';
 
 import { readFile } from 'node:fs/promises';
@@ -266,22 +266,6 @@ function findTag(tagName: string) {
   };
 }
 
-type ReadComponentOptions = {
-  componentDir: string;
-  componentName: string;
-  rootDir?: string;
-};
-
-async function readComponentFile({
-  componentDir,
-  componentName,
-  rootDir = process.cwd(),
-}: ReadComponentOptions) {
-  const dir = `${rootDir}/${componentDir}/${componentName}/${componentName}`;
-  const html = await readFile(dir + '.html', 'utf8').catch(() => undefined);
-  const script = await readFile(dir + '.ts', 'utf8').catch(() => undefined);
-  return { html, script };
-}
 
 export default defineConfig({
   build: {},

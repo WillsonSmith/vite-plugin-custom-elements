@@ -114,20 +114,31 @@ async function replaceContentWithHTMLElements(
     if (!thisOne) continue;
 
     const markup = await readFile(thisOne, 'utf8');
+
+    // I need to handle template content here.
+    // Focused on shadowrootmode="open" right now but should also consider non-shadow templates
     const fragment = parseFragment(markup);
 
     const styleTags = findElements(fragment, findTag('style'));
     const scriptTags = findElements(fragment, findTag('script'));
 
-    styles.set(getTagName(element), styleTags);
-    scripts.set(getTagName(element), {
-      relativePath: thisOne.split(projectPath).join(''),
-      tags: scriptTags,
+    const shadowTemplates = findElement(fragment, (element) => {
+      return Boolean(
+        element.tagName === 'template' &&
+          getAttribute(element, 'shadowrootmode'),
+      );
     });
 
-    styleTags.forEach((style) => remove(style));
-    scriptTags.forEach((script) => remove(script));
+    if (!shadowTemplates) {
+      styles.set(getTagName(element), styleTags);
+      scripts.set(getTagName(element), {
+        relativePath: thisOne.split(projectPath).join(''),
+        tags: scriptTags,
+      });
 
+      styleTags.forEach((style) => remove(style));
+      scriptTags.forEach((script) => remove(script));
+    }
     replaceElement(
       element,
       copyWithElementChildren(element, serialize(fragment)),
@@ -287,10 +298,22 @@ function copyWithElementChildren(element: Element, markupText: string) {
   const markupFragment = parseFragment(markupText);
   const newElement = createElement(getTagName(element));
 
-  copyAttributes(element, newElement);
-  moveChildren(markupFragment, newElement);
-  replaceSlotWithContent(markupFragment, newElement, getChildNodes(element));
+  const shadowTemplates = findElement(markupFragment, (element) => {
+    return Boolean(
+      element.tagName === 'template' && getAttribute(element, 'shadowrootmode'),
+    );
+  });
 
+  copyAttributes(element, newElement);
+
+  if (shadowTemplates) {
+    appendChild(newElement, shadowTemplates);
+    moveChildren(element, newElement);
+  } else {
+    moveChildren(markupFragment, newElement);
+
+    replaceSlotWithContent(markupFragment, newElement, getChildNodes(element));
+  }
   return newElement;
 }
 
@@ -314,7 +337,10 @@ function replaceSlotWithContent(
   return element;
 }
 
-function moveChildren(currentElement: DocumentFragment, newElement: Element) {
+function moveChildren(
+  currentElement: Element | DocumentFragment,
+  newElement: Element,
+) {
   const children = getChildNodes(currentElement);
   for (const child of children) {
     appendChild(newElement, child);

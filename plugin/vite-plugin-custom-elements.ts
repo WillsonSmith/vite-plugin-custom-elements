@@ -200,10 +200,6 @@ async function replaceContentWithHTMLElements(
           value = value.replace(
             staticImportRegex,
             (_: string, p1: string, importPath: string, p3: string) => {
-              console.log(_);
-              console.log(p1);
-              console.log(importPath);
-              console.log(p3);
               return `import ${p1}${path.join(importerPath, importPath)}${p3}`;
             },
           );

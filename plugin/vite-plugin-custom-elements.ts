@@ -201,7 +201,7 @@ async function replaceContentWithHTMLElements(
 
   const scriptContents = new Set<string>();
   const scriptSrcs = new Set<string>();
-  // These will also need the relative path of the component html s/t can transform
+
   for (const [, scriptList] of scripts) {
     for (const script of scriptList.tags) {
       const src = getAttribute(script, 'src');

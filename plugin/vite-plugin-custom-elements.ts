@@ -108,6 +108,10 @@ async function replaceContentWithHTMLElements(
 
   const styles = new Map<string, Element[]>();
   const scripts = new Map<string, { relativePath: string; tags: Element[] }>();
+  const shadyScripts = new Map<
+    string,
+    { relativePath: string; tags: Element[] }
+  >();
 
   for (const element of customElements) {
     const thisOne = htmlElements.find((e) => {
@@ -142,16 +146,49 @@ async function replaceContentWithHTMLElements(
       return withinShadowedTemplate === null;
     });
 
-    const scriptTags = findElements(fragment, findTag('script'));
+    // This isn't entirely accurate. I need to transform the scripts but not add them to the body.
+    const scriptTags = findElements(fragment, (element: Element) => {
+      if (getTagName(element) !== 'script') return false;
+      if (!templateContent) return true;
+
+      const withinShadowedTemplate = findElement(templateContent, (el) => {
+        return el === element;
+      });
+
+      return withinShadowedTemplate === null;
+    });
+
+    const shadyScriptTags = findElements(fragment, (element: Element) => {
+      if (getTagName(element) !== 'script') return false;
+      if (!templateContent) return true;
+
+      const withinShadowedTemplate = findElement(templateContent, (el) => {
+        return el === element;
+      });
+
+      return withinShadowedTemplate !== null;
+    });
+
+    transformScriptsForShady(
+      shadyScriptTags,
+      path.dirname(thisOne.split(projectPath).join('')),
+    );
+
+    shadyScripts.set(getTagName(element), {
+      relativePath: thisOne.split(projectPath).join(''),
+      tags: shadyScriptTags,
+    });
 
     styles.set(getTagName(element), styleTags);
+    styleTags.forEach((style) => remove(style));
+
     scripts.set(getTagName(element), {
       relativePath: thisOne.split(projectPath).join(''),
       tags: scriptTags,
     });
 
-    styleTags.forEach((style) => remove(style));
     scriptTags.forEach((script) => remove(script));
+
     replaceElement(
       element,
       copyWithElementChildren(element, serialize(fragment)),
@@ -270,6 +307,41 @@ async function replaceContentWithHTMLElements(
 
   for (const tag of styleTags) {
     appendChild(findElement(doc, findTag('head')), tag);
+  }
+}
+
+function transformScriptsForShady(scripts: Element[], elementRoot: string) {
+  for (const script of scripts) {
+    const src = getAttribute(script, 'src');
+
+    if (src) {
+      setAttribute(script, 'src', path.join(elementRoot, src));
+    }
+    const content = getChildNodes(script)[0];
+    if (content && isTextNode(content)) {
+      const staticImportRegex =
+        /import\s+((?:[\w*\s{},]*\s*from\s*)?['"])([^'"]+)(['"])/;
+
+      const dynamicImportRegex = /(import\s*\(\s*['"])([^'"]+)(['"]\s*\))/g;
+
+      const importerPath = elementRoot;
+      let value = content.value;
+      value = value.replace(
+        staticImportRegex,
+        (_: string, p1: string, importPath: string, p3: string) => {
+          return `import ${p1}${path.join(importerPath, importPath)}${p3}`;
+        },
+      );
+
+      value = value.replace(
+        dynamicImportRegex,
+        (_: string, p1: string, importPath: string, p3: string) => {
+          return `${p1}${path.join(importerPath, importPath)}${p3}`;
+        },
+      );
+
+      replaceElement(script, createScript({ type: 'module' }, value));
+    }
   }
 }
 

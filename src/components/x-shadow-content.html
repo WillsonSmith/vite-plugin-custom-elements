@@ -33,4 +33,21 @@
   <div class="shadow-content-slotted">
     <slot></slot>
   </div>
+
+  <script type="module" src="./x-time/logger.ts"></script>
+
+  <script type="module">
+    import { logger } from './x-time/logger.ts';
+
+    logger('from w/in x-shadow');
+  </script>
+
+  <script type="module">
+    console.log('hi');
+  </script>
 </template>
+
+<!-- uncomment when doing merges -->
+<!-- <script type="module"> -->
+<!--   import { logger } from './x-time/logger.ts'; -->
+<!-- </script> -->

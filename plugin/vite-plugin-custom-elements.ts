@@ -15,7 +15,6 @@ import {
   isTextNode,
   remove,
   setAttribute,
-  setTextContent,
 } from '@web/parse5-utils';
 import {
   CustomElementDeclaration,
@@ -28,6 +27,7 @@ import path from 'node:path';
 import { parse, parseFragment, serialize } from 'parse5';
 import { Document, DocumentFragment } from 'parse5/dist/tree-adapters/default';
 import postcss, { Rule } from 'postcss';
+// @ts-expect-error No type definitions
 import prefixSelector from 'postcss-prefix-selector';
 import ts from 'typescript';
 
@@ -105,7 +105,7 @@ async function replaceContentWithHTMLElements(
   const htmlElements = await glob(`${projectPath}/${elementDir}/**/*-*.html`);
 
   const styles = new Map<string, Element[]>();
-  const scripts = new Map<string, Element[]>();
+  const scripts = new Map<string, { relativePath: string; tags: Element[] }>();
 
   for (const element of customElements) {
     const thisOne = htmlElements.find((e) => {
@@ -120,7 +120,10 @@ async function replaceContentWithHTMLElements(
     const scriptTags = findElements(fragment, findTag('script'));
 
     styles.set(getTagName(element), styleTags);
-    scripts.set(getTagName(element), scriptTags);
+    scripts.set(getTagName(element), {
+      relativePath: thisOne,
+      tags: scriptTags,
+    });
 
     styleTags.forEach((style) => remove(style));
     scriptTags.forEach((script) => remove(script));
@@ -173,12 +176,15 @@ async function replaceContentWithHTMLElements(
   }
 
   const scriptContents = new Set<string>();
+  const scriptSrcs = new Set<string>();
   // These will also need the relative path of the component html s/t can transform
   for (const [tag, scriptList] of scripts) {
-    for (const script of scriptList) {
+    for (const script of scriptList.tags) {
       const src = getAttribute(script, 'src');
       if (src) {
-        console.log(src);
+        const elementRoot = path.dirname(scriptList.relativePath);
+        const relativePath = path.join(elementRoot, src);
+        scriptSrcs.add(relativePath);
       } else {
         const content = getChildNodes(script)[0];
         if (content && isTextNode(content)) {
@@ -187,6 +193,13 @@ async function replaceContentWithHTMLElements(
         }
       }
     }
+  }
+
+  for (const source of Array.from(scriptSrcs)) {
+    appendChild(
+      findElement(doc, findTag('body')),
+      createScript({ type: 'module', src: source }),
+    );
   }
 
   appendChild(

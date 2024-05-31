@@ -70,7 +70,7 @@ function transformIndex(options: PluginOptions) {
   const normalizedRoot = options.root.split(cwd).join('');
   const projectPath = path.join(cwd, normalizedRoot);
 
-  return async (content: string, { path: indexPath }) => {
+  return async (content: string) => {
     const doc = parse(content);
     const body = findElement(doc, findTag('body'));
 
@@ -85,7 +85,6 @@ function transformIndex(options: PluginOptions) {
       customElements,
       projectPath,
       options.elementDir,
-      indexPath,
     );
 
     return serialize(doc);
@@ -102,7 +101,6 @@ async function replaceContentWithHTMLElements(
   customElements: Element[],
   projectPath: string,
   elementDir: string,
-  indexPath: string,
 ) {
   const htmlElements = await glob(`${projectPath}/${elementDir}/**/*-*.html`);
 

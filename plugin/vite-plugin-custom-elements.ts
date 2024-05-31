@@ -113,6 +113,8 @@ async function replaceContentWithHTMLElements(
     });
     if (!thisOne) continue;
 
+    console.log();
+
     const markup = await readFile(thisOne, 'utf8');
     const fragment = parseFragment(markup);
 
@@ -121,7 +123,7 @@ async function replaceContentWithHTMLElements(
 
     styles.set(getTagName(element), styleTags);
     scripts.set(getTagName(element), {
-      relativePath: thisOne,
+      relativePath: thisOne.split(projectPath).join(''),
       tags: scriptTags,
     });
 
@@ -178,7 +180,7 @@ async function replaceContentWithHTMLElements(
   const scriptContents = new Set<string>();
   const scriptSrcs = new Set<string>();
   // These will also need the relative path of the component html s/t can transform
-  for (const [tag, scriptList] of scripts) {
+  for (const [, scriptList] of scripts) {
     for (const script of scriptList.tags) {
       const src = getAttribute(script, 'src');
       if (src) {
@@ -188,7 +190,6 @@ async function replaceContentWithHTMLElements(
       } else {
         const content = getChildNodes(script)[0];
         if (content && isTextNode(content)) {
-          console.log(tag, content.value);
           scriptContents.add(content.value);
         }
       }
@@ -225,29 +226,6 @@ async function replaceContentWithHTMLElements(
   for (const tag of styleTags) {
     appendChild(findElement(doc, findTag('head')), tag);
   }
-
-  // const scriptMap = new Map();
-  // const scriptContents = new Set<string>();
-  //
-  // for (const script of scripts) {
-  //   const src = getAttribute(script, 'src');
-  //   if (src && !scriptMap.has(src)) {
-  //     scriptMap.set(src, script);
-  //   } else {
-  //     const content = getChildNodes(script)[0];
-  //     if (content && isTextNode(content)) {
-  //       scriptContents.add(content.value);
-  //     }
-  //   }
-  // }
-  //
-  // const scriptTags = Array.from(scriptContents).map((scriptContent) => {
-  //   return createScript({ type: 'module' }, scriptContent);
-  // });
-  //
-  // for (const tag of scriptTags) {
-  //   appendChild(findElement(doc, findTag('body')), tag);
-  // }
 }
 
 async function replaceContentWithCERendered(

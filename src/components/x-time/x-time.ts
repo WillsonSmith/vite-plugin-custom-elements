@@ -27,10 +27,8 @@ export class XTime extends BaseElement {
   }
 }
 
-
 declare global {
   interface HTMLElementTagNameMap {
     'x-time': XTime;
   }
 }
-

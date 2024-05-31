@@ -15,7 +15,6 @@ import {
   isTextNode,
   remove,
   setAttribute,
-  setTextContent,
 } from '@web/parse5-utils';
 import {
   CustomElementDeclaration,
@@ -28,6 +27,7 @@ import path from 'node:path';
 import { parse, parseFragment, serialize } from 'parse5';
 import { Document, DocumentFragment } from 'parse5/dist/tree-adapters/default';
 import postcss, { Rule } from 'postcss';
+// @ts-expect-error No type definitions
 import prefixSelector from 'postcss-prefix-selector';
 import ts from 'typescript';
 
@@ -70,7 +70,7 @@ function transformIndex(options: PluginOptions) {
   const normalizedRoot = options.root.split(cwd).join('');
   const projectPath = path.join(cwd, normalizedRoot);
 
-  return async (content: string) => {
+  return async (content: string, { path: indexPath }) => {
     const doc = parse(content);
     const body = findElement(doc, findTag('body'));
 
@@ -85,6 +85,7 @@ function transformIndex(options: PluginOptions) {
       customElements,
       projectPath,
       options.elementDir,
+      indexPath,
     );
 
     return serialize(doc);
@@ -101,11 +102,12 @@ async function replaceContentWithHTMLElements(
   customElements: Element[],
   projectPath: string,
   elementDir: string,
+  indexPath: string,
 ) {
   const htmlElements = await glob(`${projectPath}/${elementDir}/**/*-*.html`);
 
   const styles = new Map<string, Element[]>();
-  const scripts = new Map<string, Element[]>();
+  const scripts = new Map<string, { relativePath: string; tags: Element[] }>();
 
   for (const element of customElements) {
     const thisOne = htmlElements.find((e) => {
@@ -120,7 +122,10 @@ async function replaceContentWithHTMLElements(
     const scriptTags = findElements(fragment, findTag('script'));
 
     styles.set(getTagName(element), styleTags);
-    scripts.set(getTagName(element), scriptTags);
+    scripts.set(getTagName(element), {
+      relativePath: thisOne.split(projectPath).join(''),
+      tags: scriptTags,
+    });
 
     styleTags.forEach((style) => remove(style));
     scriptTags.forEach((script) => remove(script));
@@ -173,20 +178,52 @@ async function replaceContentWithHTMLElements(
   }
 
   const scriptContents = new Set<string>();
+  const scriptSrcs = new Set<string>();
   // These will also need the relative path of the component html s/t can transform
-  for (const [tag, scriptList] of scripts) {
-    for (const script of scriptList) {
+  for (const [, scriptList] of scripts) {
+    for (const script of scriptList.tags) {
       const src = getAttribute(script, 'src');
       if (src) {
-        console.log(src);
+        const elementRoot = path.dirname(scriptList.relativePath);
+        const relativePath = path.join(elementRoot, src);
+        scriptSrcs.add(relativePath);
       } else {
         const content = getChildNodes(script)[0];
         if (content && isTextNode(content)) {
-          console.log(tag, content.value);
-          scriptContents.add(content.value);
+          const importerPath = path.dirname(scriptList.relativePath);
+
+          let value = content.value;
+
+          const staticImportRegex =
+            /import\s+((?:[\w*\s{},]*\s*from\s*)?['"])([^'"]+)(['"])/;
+
+          value = value.replace(
+            staticImportRegex,
+            (_: string, p1: string, importPath: string, p3: string) => {
+              return `import ${p1}${path.join(importerPath, importPath)}${p3}`;
+            },
+          );
+
+          const dynamicImportRegex = /(import\s*\(\s*['"])([^'"]+)(['"]\s*\))/g;
+
+          value = value.replace(
+            dynamicImportRegex,
+            (_: string, p1: string, importPath: string, p3: string) => {
+              return `${p1}${path.join(importerPath, importPath)}${p3}`;
+            },
+          );
+
+          scriptContents.add(value);
         }
       }
     }
+  }
+
+  for (const source of Array.from(scriptSrcs)) {
+    appendChild(
+      findElement(doc, findTag('body')),
+      createScript({ type: 'module', src: source }),
+    );
   }
 
   appendChild(
@@ -212,29 +249,6 @@ async function replaceContentWithHTMLElements(
   for (const tag of styleTags) {
     appendChild(findElement(doc, findTag('head')), tag);
   }
-
-  // const scriptMap = new Map();
-  // const scriptContents = new Set<string>();
-  //
-  // for (const script of scripts) {
-  //   const src = getAttribute(script, 'src');
-  //   if (src && !scriptMap.has(src)) {
-  //     scriptMap.set(src, script);
-  //   } else {
-  //     const content = getChildNodes(script)[0];
-  //     if (content && isTextNode(content)) {
-  //       scriptContents.add(content.value);
-  //     }
-  //   }
-  // }
-  //
-  // const scriptTags = Array.from(scriptContents).map((scriptContent) => {
-  //   return createScript({ type: 'module' }, scriptContent);
-  // });
-  //
-  // for (const tag of scriptTags) {
-  //   appendChild(findElement(doc, findTag('body')), tag);
-  // }
 }
 
 async function replaceContentWithCERendered(
@@ -319,7 +333,7 @@ function copyAttributes(currentElement: Element, newElement: Element) {
 }
 
 async function gatherScripts(projectPath: string) {
-  const files = await glob(`${projectPath}/**/*.{ts,js}`, {
+  const files = await glob(`${projectPath}/**/*.{ ts, js }`, {
     ignore: 'node_modules/**',
   });
   return files.map((path) => {

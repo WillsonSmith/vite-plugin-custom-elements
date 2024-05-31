@@ -40,6 +40,7 @@ var XTime = class extends BaseElement {
     clearInterval(this.interval);
   }
 };
+if (!customElements?.get("x-time")) customElements.define("x-time", XTime);
 export {
   XTime
 };

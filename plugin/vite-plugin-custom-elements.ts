@@ -6,11 +6,13 @@ import {
   createScript,
   findElement,
   findElements,
+  findNode,
   getAttribute,
   getAttributes,
   getChildNodes,
   getParentNode,
   getTagName,
+  getTemplateContent,
   insertBefore,
   isTextNode,
   remove,
@@ -21,6 +23,7 @@ import {
   Declaration,
   Package,
 } from 'custom-elements-manifest';
+import { build as esbuild } from 'esbuild';
 import { glob } from 'glob';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -106,6 +109,10 @@ async function replaceContentWithHTMLElements(
 
   const styles = new Map<string, Element[]>();
   const scripts = new Map<string, { relativePath: string; tags: Element[] }>();
+  const shadyScripts = new Map<
+    string,
+    { relativePath: string; tags: Element[] }
+  >();
 
   for (const element of customElements) {
     const thisOne = htmlElements.find((e) => {
@@ -114,18 +121,73 @@ async function replaceContentWithHTMLElements(
     if (!thisOne) continue;
 
     const markup = await readFile(thisOne, 'utf8');
-    const fragment = parseFragment(markup);
 
-    const styleTags = findElements(fragment, findTag('style'));
-    const scriptTags = findElements(fragment, findTag('script'));
+    // I need to handle template content here.
+    // Focused on shadowrootmode="open" right now but should also consider non-shadow templates
+    const fragment = parseFragment(markup);
+    const shadowTemplates = findElement(fragment, (element) => {
+      return Boolean(
+        element.tagName === 'template' &&
+          getAttribute(element, 'shadowrootmode'),
+      );
+    });
+
+    const templateContent = shadowTemplates
+      ? getTemplateContent(shadowTemplates)
+      : undefined;
+
+    const styleTags = findElements(fragment, (element: Element) => {
+      if (getTagName(element) !== 'style') return false;
+      if (!templateContent) return true;
+
+      const withinShadowedTemplate = findElement(templateContent, (el) => {
+        return el === element;
+      });
+
+      return withinShadowedTemplate === null;
+    });
+
+    // This isn't entirely accurate. I need to transform the scripts but not add them to the body.
+    const scriptTags = findElements(fragment, (element: Element) => {
+      if (getTagName(element) !== 'script') return false;
+      if (!templateContent) return true;
+
+      const withinShadowedTemplate = findElement(templateContent, (el) => {
+        return el === element;
+      });
+
+      return withinShadowedTemplate === null;
+    });
+
+    const shadyScriptTags = findElements(fragment, (element: Element) => {
+      if (getTagName(element) !== 'script') return false;
+      if (!templateContent) return true;
+
+      const withinShadowedTemplate = findElement(templateContent, (el) => {
+        return el === element;
+      });
+
+      return withinShadowedTemplate !== null;
+    });
+
+    transformScriptsForShady(
+      shadyScriptTags,
+      path.dirname(thisOne.split(projectPath).join('')),
+    );
+
+    shadyScripts.set(getTagName(element), {
+      relativePath: thisOne.split(projectPath).join(''),
+      tags: shadyScriptTags,
+    });
 
     styles.set(getTagName(element), styleTags);
+    styleTags.forEach((style) => remove(style));
+
     scripts.set(getTagName(element), {
       relativePath: thisOne.split(projectPath).join(''),
       tags: scriptTags,
     });
 
-    styleTags.forEach((style) => remove(style));
     scriptTags.forEach((script) => remove(script));
 
     replaceElement(
@@ -177,7 +239,7 @@ async function replaceContentWithHTMLElements(
 
   const scriptContents = new Set<string>();
   const scriptSrcs = new Set<string>();
-  // These will also need the relative path of the component html s/t can transform
+
   for (const [, scriptList] of scripts) {
     for (const script of scriptList.tags) {
       const src = getAttribute(script, 'src');
@@ -224,10 +286,12 @@ async function replaceContentWithHTMLElements(
     );
   }
 
-  appendChild(
-    findElement(doc, findTag('body')),
-    createScript({ type: 'module' }, Array.from(scriptContents).join('\n')),
-  );
+  for (const content of Array.from(scriptContents)) {
+    appendChild(
+      findElement(doc, findTag('body')),
+      createScript({ type: 'module', content }),
+    );
+  }
 
   const styleTags = Array.from(styleSet).map((content) => {
     const style = createElement('style');
@@ -246,6 +310,41 @@ async function replaceContentWithHTMLElements(
 
   for (const tag of styleTags) {
     appendChild(findElement(doc, findTag('head')), tag);
+  }
+}
+
+function transformScriptsForShady(scripts: Element[], elementRoot: string) {
+  for (const script of scripts) {
+    const src = getAttribute(script, 'src');
+
+    if (src) {
+      setAttribute(script, 'src', path.join(elementRoot, src));
+    }
+    const content = getChildNodes(script)[0];
+    if (content && isTextNode(content)) {
+      const staticImportRegex =
+        /import\s+((?:[\w*\s{},]*\s*from\s*)?['"])([^'"]+)(['"])/;
+
+      const dynamicImportRegex = /(import\s*\(\s*['"])([^'"]+)(['"]\s*\))/g;
+
+      const importerPath = elementRoot;
+      let value = content.value;
+      value = value.replace(
+        staticImportRegex,
+        (_: string, p1: string, importPath: string, p3: string) => {
+          return `import ${p1}${path.join(importerPath, importPath)}${p3}`;
+        },
+      );
+
+      value = value.replace(
+        dynamicImportRegex,
+        (_: string, p1: string, importPath: string, p3: string) => {
+          return `${p1}${path.join(importerPath, importPath)}${p3}`;
+        },
+      );
+
+      replaceElement(script, createScript({ type: 'module' }, value));
+    }
   }
 }
 
@@ -287,10 +386,22 @@ function copyWithElementChildren(element: Element, markupText: string) {
   const markupFragment = parseFragment(markupText);
   const newElement = createElement(getTagName(element));
 
-  copyAttributes(element, newElement);
-  moveChildren(markupFragment, newElement);
-  replaceSlotWithContent(markupFragment, newElement, getChildNodes(element));
+  const shadowTemplates = findElement(markupFragment, (element) => {
+    return Boolean(
+      element.tagName === 'template' && getAttribute(element, 'shadowrootmode'),
+    );
+  });
 
+  copyAttributes(element, newElement);
+
+  if (shadowTemplates) {
+    appendChild(newElement, shadowTemplates);
+    moveChildren(element, newElement);
+  } else {
+    moveChildren(markupFragment, newElement);
+
+    replaceSlotWithContent(markupFragment, newElement, getChildNodes(element));
+  }
   return newElement;
 }
 
@@ -314,7 +425,10 @@ function replaceSlotWithContent(
   return element;
 }
 
-function moveChildren(currentElement: DocumentFragment, newElement: Element) {
+function moveChildren(
+  currentElement: Element | DocumentFragment,
+  newElement: Element,
+) {
   const children = getChildNodes(currentElement);
   for (const child of children) {
     appendChild(newElement, child);

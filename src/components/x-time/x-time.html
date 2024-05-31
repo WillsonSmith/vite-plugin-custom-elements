@@ -34,7 +34,7 @@
   import { XTime } from './x-time.ts';
 
   if (!customElements?.get('x-time')) {
-    customElements.define('x-time', Time);
+    customElements.define('x-time', XTime);
   }
 
   const { logger } = await import('./logger.ts');

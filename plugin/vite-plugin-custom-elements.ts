@@ -23,6 +23,7 @@ import {
   Declaration,
   Package,
 } from 'custom-elements-manifest';
+import { build as esbuild } from 'esbuild';
 import { glob } from 'glob';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -285,10 +286,12 @@ async function replaceContentWithHTMLElements(
     );
   }
 
-  appendChild(
-    findElement(doc, findTag('body')),
-    createScript({ type: 'module' }, Array.from(scriptContents).join('\n')),
-  );
+  for (const content of Array.from(scriptContents)) {
+    appendChild(
+      findElement(doc, findTag('body')),
+      createScript({ type: 'module', content }),
+    );
+  }
 
   const styleTags = Array.from(styleSet).map((content) => {
     const style = createElement('style');

@@ -70,7 +70,7 @@ function transformIndex(options: PluginOptions) {
   const normalizedRoot = options.root.split(cwd).join('');
   const projectPath = path.join(cwd, normalizedRoot);
 
-  return async (content: string) => {
+  return async (content: string, { path: indexPath }) => {
     const doc = parse(content);
     const body = findElement(doc, findTag('body'));
 
@@ -85,6 +85,7 @@ function transformIndex(options: PluginOptions) {
       customElements,
       projectPath,
       options.elementDir,
+      indexPath,
     );
 
     return serialize(doc);
@@ -101,6 +102,7 @@ async function replaceContentWithHTMLElements(
   customElements: Element[],
   projectPath: string,
   elementDir: string,
+  indexPath: string,
 ) {
   const htmlElements = await glob(`${projectPath}/${elementDir}/**/*-*.html`);
 
@@ -112,8 +114,6 @@ async function replaceContentWithHTMLElements(
       return e.includes(getTagName(element));
     });
     if (!thisOne) continue;
-
-    console.log();
 
     const markup = await readFile(thisOne, 'utf8');
     const fragment = parseFragment(markup);
@@ -190,7 +190,34 @@ async function replaceContentWithHTMLElements(
       } else {
         const content = getChildNodes(script)[0];
         if (content && isTextNode(content)) {
-          scriptContents.add(content.value);
+          const importerPath = path.dirname(scriptList.relativePath);
+
+          let value = content.value;
+
+          const staticImportRegex =
+            /import\s+((?:[\w*\s{},]*\s*from\s*)?['"])([^'"]+)(['"])/;
+
+          value = value.replace(
+            staticImportRegex,
+            (_: string, p1: string, importPath: string, p3: string) => {
+              console.log(_);
+              console.log(p1);
+              console.log(importPath);
+              console.log(p3);
+              return `import ${p1}${path.join(importerPath, importPath)}${p3}`;
+            },
+          );
+
+          const dynamicImportRegex = /(import\s*\(\s*['"])([^'"]+)(['"]\s*\))/g;
+
+          value = value.replace(
+            dynamicImportRegex,
+            (_: string, p1: string, importPath: string, p3: string) => {
+              return `${p1}${path.join(importerPath, importPath)}${p3}`;
+            },
+          );
+
+          scriptContents.add(value);
         }
       }
     }
@@ -310,7 +337,7 @@ function copyAttributes(currentElement: Element, newElement: Element) {
 }
 
 async function gatherScripts(projectPath: string) {
-  const files = await glob(`${projectPath}/**/*.{ts,js}`, {
+  const files = await glob(`${projectPath}/**/*.{ ts, js }`, {
     ignore: 'node_modules/**',
   });
   return files.map((path) => {

@@ -30,4 +30,14 @@
 </style>
 
 <div>It is currently <span class="time"></span>.</div>
-<script type="module" src="./x-time.ts"></script>
+<script type="module">
+  import { XTime } from './x-time.ts';
+
+  if (!customElements?.get('x-time')) {
+    customElements.define('x-time', Time);
+  }
+
+  const { logger } = await import('./logger.ts');
+
+  logger('is Logged');
+</script>

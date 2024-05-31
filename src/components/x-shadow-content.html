@@ -1,0 +1,36 @@
+<style>
+  .shadow-content-slotted {
+    padding: 1rem;
+  }
+</style>
+
+<template shadowrootmode="open">
+  <style>
+    :host {
+      --space: calc(1rem / 2);
+      --space-narrow: calc(var(--space) / 2);
+
+      display: block;
+      border: 1px solid black;
+      border-radius: 3px;
+      padding: var(--space-narrow) var(--space);
+    }
+
+    .shadow-content-slotted {
+      border-top: 1px solid black;
+      padding-block-start: var(--space-narrow);
+    }
+
+    p {
+      margin: 0;
+    }
+
+    ::slotted(p) {
+      margin: 0;
+    }
+  </style>
+  <p>This is some shadow content</p>
+  <div class="shadow-content-slotted">
+    <slot></slot>
+  </div>
+</template>

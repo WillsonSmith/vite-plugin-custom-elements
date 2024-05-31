@@ -6,11 +6,13 @@ import {
   createScript,
   findElement,
   findElements,
+  findNode,
   getAttribute,
   getAttributes,
   getChildNodes,
   getParentNode,
   getTagName,
+  getTemplateContent,
   insertBefore,
   isTextNode,
   remove,
@@ -118,10 +120,6 @@ async function replaceContentWithHTMLElements(
     // I need to handle template content here.
     // Focused on shadowrootmode="open" right now but should also consider non-shadow templates
     const fragment = parseFragment(markup);
-
-    const styleTags = findElements(fragment, findTag('style'));
-    const scriptTags = findElements(fragment, findTag('script'));
-
     const shadowTemplates = findElement(fragment, (element) => {
       return Boolean(
         element.tagName === 'template' &&
@@ -129,16 +127,31 @@ async function replaceContentWithHTMLElements(
       );
     });
 
-    if (!shadowTemplates) {
-      styles.set(getTagName(element), styleTags);
-      scripts.set(getTagName(element), {
-        relativePath: thisOne.split(projectPath).join(''),
-        tags: scriptTags,
+    const templateContent = shadowTemplates
+      ? getTemplateContent(shadowTemplates)
+      : undefined;
+
+    const styleTags = findElements(fragment, (element: Element) => {
+      if (getTagName(element) !== 'style') return false;
+      if (!templateContent) return true;
+
+      const withinShadowedTemplate = findElement(templateContent, (el) => {
+        return el === element;
       });
 
-      styleTags.forEach((style) => remove(style));
-      scriptTags.forEach((script) => remove(script));
-    }
+      return withinShadowedTemplate === null;
+    });
+
+    const scriptTags = findElements(fragment, findTag('script'));
+
+    styles.set(getTagName(element), styleTags);
+    scripts.set(getTagName(element), {
+      relativePath: thisOne.split(projectPath).join(''),
+      tags: scriptTags,
+    });
+
+    styleTags.forEach((style) => remove(style));
+    scriptTags.forEach((script) => remove(script));
     replaceElement(
       element,
       copyWithElementChildren(element, serialize(fragment)),

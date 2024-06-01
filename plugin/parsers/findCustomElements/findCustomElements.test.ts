@@ -6,7 +6,7 @@ import { findCustomElements, reservedElements } from './findCustomElements';
 
 describe('findCustomElements', () => {
   it('Finds elements in a Document', () => {
-    const doc = parse(pageTemplate(`<my-custom-element></my-custom-element`));
+    const doc = parse(pageTemplate(`<my-custom-element></my-custom-element>`));
 
     expect(tagNames(findCustomElements(doc))).toStrictEqual([
       'my-custom-element',

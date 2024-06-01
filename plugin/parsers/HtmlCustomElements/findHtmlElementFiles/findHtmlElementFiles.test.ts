@@ -10,7 +10,11 @@ const fixtureDir = fileURLToPath(
 describe('findHtmlElementFiles', () => {
   it('Finds all HTML-based Elements in a directory', async () => {
     const htmlElements = await findHtmlElementFiles(fixtureDir);
-    expect(htmlElements.map(normalize)).toStrictEqual(['/my-element.html']);
+    expect(htmlElements.map(normalize)).toStrictEqual([
+      '/shady-element-styles.html',
+      '/shady-element-scripts.html',
+      '/my-element.html',
+    ]);
   });
 });
 

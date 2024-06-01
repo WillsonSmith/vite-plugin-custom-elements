@@ -14,6 +14,10 @@ type ParsedHtmlElement = {
   content: DocumentFragment;
   scriptTags: Element[];
 };
+
+/** Extracts style tags, script tags, and content from an HTML Element fragment
+ * @param {DocumentFragment} fragment - The HTML Element as a parse5 DocumentFragment
+ * */
 export function parseHtmlElement(
   fragment: DocumentFragment,
 ): ParsedHtmlElement {
@@ -27,7 +31,7 @@ export function parseHtmlElement(
   return extracted;
 }
 
-export function extractParts(fragment: DocumentFragment) {
+function extractParts(fragment: DocumentFragment) {
   const shadowTemplate = findShadowTemplate(fragment);
 
   const styleTags = findStyles(fragment, shadowTemplate);

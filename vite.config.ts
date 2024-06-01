@@ -25,7 +25,7 @@ import { parse, parseFragment, serialize } from 'parse5';
 import ts from 'typescript';
 import { defineConfig } from 'vite';
 
-import { pluginCustomElement } from './plugin/vite-plugin-custom-elements';
+import { pluginCustomElement } from './plugin/plugin-custom-element';
 
 const transformImportedHtmlPlugin = () => {
   return {
@@ -69,6 +69,9 @@ export default defineConfig({
   },
   plugins: [
     transformImportedHtmlPlugin(),
+    pluginCustomElement({
+      root: './src',
+    }),
     // htmlPlugin({ rootDir: './src', componentsDir: 'components' }),
     // pluginCustomElement({ root: './src', elementDir: 'components' }),
   ],

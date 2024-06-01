@@ -2,6 +2,7 @@ import {
   appendChild,
   createDocumentFragment,
   createElement,
+  createScript,
 } from '@web/parse5-utils';
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -18,7 +19,7 @@ const fixtureDir = fileURLToPath(
 describe('parseHtmlElement', () => {
   it('Parses element content', async () => {});
 
-  it('Extracts <style> content', async () => {
+  it('Extracts <style> tags', async () => {
     const fragment = createDocumentFragment();
     appendChild(fragment, createStyle());
     appendChild(fragment, createStyle());
@@ -26,9 +27,9 @@ describe('parseHtmlElement', () => {
     expect((await parseHtmlElement(fragment)).styleTags.length).toBe(2);
   });
 
-  it('Does not extract <style> when in shadowroot', async () => {
+  it('Does not extract <style> tags when in shadowroot', async () => {
     const fixture = await readFile(
-      join(fixtureDir, 'shady-element.html'),
+      join(fixtureDir, 'shady-element-styles.html'),
       'utf8',
     );
     const fragment = parseFragment(fixture);
@@ -36,10 +37,23 @@ describe('parseHtmlElement', () => {
     expect((await parseHtmlElement(fragment)).styleTags.length).toBe(0);
   });
 
-  it('Extracts <script> content', () => {});
-  it('Transform <style> content', () => {});
-  it('Transforms <script> sources', () => {});
-  it('Transforms <script> imports', () => {});
+  it('Extracts <script> tags', async () => {
+    const fragment = createDocumentFragment();
+    appendChild(fragment, createScript());
+    appendChild(fragment, createScript());
+
+    expect((await parseHtmlElement(fragment)).scriptTags.length).toBe(2);
+  });
+
+  it('Does not extract <style> tags when in shadowroot', async () => {
+    const fixture = await readFile(
+      join(fixtureDir, 'shady-element-scripts.html'),
+      'utf8',
+    );
+    const fragment = parseFragment(fixture);
+
+    expect((await parseHtmlElement(fragment)).scriptTags.length).toBe(0);
+  });
 });
 
 function normalize(path: string): string {

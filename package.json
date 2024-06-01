@@ -28,7 +28,8 @@
     "parse5": "^7.1.2",
     "prettier": "^3.2.5",
     "typescript": "^5.4.5",
-    "vite-raw-plugin": "^1.0.2"
+    "vite-raw-plugin": "^1.0.2",
+    "vitest": "^1.6.0"
   },
   "dependencies": {
     "@custom-elements-manifest/analyzer": "^0.10.2",

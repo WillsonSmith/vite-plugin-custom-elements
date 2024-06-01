@@ -13,7 +13,7 @@ export async function generateManifest(directory: string): Promise<Package> {
   const scripts = findScripts(directory);
   const typescriptSources = createTypescriptSources(await scripts);
 
-  return create(typescriptSources);
+  return create({ modules: await typescriptSources });
 }
 
 type SourceScript = {

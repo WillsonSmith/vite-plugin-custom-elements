@@ -125,6 +125,7 @@ async function replaceContentWithHTMLElements(
     // I need to handle template content here.
     // Focused on shadowrootmode="open" right now but should also consider non-shadow templates
     const fragment = parseFragment(markup);
+
     const shadowTemplates = findElement(fragment, (element) => {
       return Boolean(
         element.tagName === 'template' &&

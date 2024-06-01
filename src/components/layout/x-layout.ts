@@ -34,13 +34,9 @@ export class XLayout extends BaseElement {
     `;
   }
 
-  attributeChangedCallback(
-    name: string,
-    oldValue: string,
-    newValue: string,
-  ): void {
+  attributeChangedCallback(name: string): void {
     if (name === 'layout') {
-      this.querySelector('.x-layout')?.classList.toggle(
+      this.layout?.classList.toggle(
         'x-layout--two-column',
         this.getAttribute('layout') === 'two-column',
       );

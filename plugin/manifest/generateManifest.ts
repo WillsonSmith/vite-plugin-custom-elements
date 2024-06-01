@@ -1,16 +1,15 @@
-// @ts-expect-error `create` exists but is not in the types.
-import { type Module, create } from '@custom-elements-manifest/analyzer';
-import {
-  CustomElementDeclaration,
-  Declaration,
-  Package,
-} from 'custom-elements-manifest';
+// @ts-expect-error This IS exported
+import { create } from '@custom-elements-manifest/analyzer';
+import { Package } from 'custom-elements-manifest';
 import { glob } from 'glob';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import ts from 'typescript';
 
-export async function generateManifest(directory: string): Module {
+/** Generate a manifest of JavaScirpt modules in a directory
+ * @param {string} directory - The directory to search for modules.
+ */
+export async function generateManifest(directory: string): Promise<Package> {
   const scripts = findScripts(directory);
   const typescriptSources = createTypescriptSources(await scripts);
 

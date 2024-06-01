@@ -281,6 +281,9 @@ export default defineConfig({
       '@': path.resolve(__dirname),
     },
   },
+  test: {
+    root: './',
+  },
   plugins: [
     transformImportedHtmlPlugin(),
     // htmlPlugin({ rootDir: './src', componentsDir: 'components' }),

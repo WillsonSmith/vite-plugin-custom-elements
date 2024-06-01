@@ -9,7 +9,14 @@ import {
 } from '@web/parse5-utils';
 import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
 
-export async function parseHtmlElement(fragment: DocumentFragment) {
+type ParsedHtmlElement = {
+  styleTags: Element[];
+  content: DocumentFragment;
+  scriptTags: Element[];
+};
+export function parseHtmlElement(
+  fragment: DocumentFragment,
+): ParsedHtmlElement {
   const shadowTemplate = findShadowTemplate(fragment);
   if (shadowTemplate) {
     console.log('Handle shadowroot element');

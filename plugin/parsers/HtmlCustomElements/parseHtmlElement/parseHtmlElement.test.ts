@@ -24,17 +24,17 @@ describe('parseHtmlElement', () => {
     appendChild(fragment, createStyle());
     appendChild(fragment, createStyle());
 
-    expect((await parseHtmlElement(fragment)).styleTags.length).toBe(2);
+    expect(parseHtmlElement(fragment).styleTags.length).toBe(2);
   });
 
   it('Does not extract <style> tags when in shadowroot', async () => {
-    const fixture = await readFile(
+    const fixture = readFile(
       join(fixtureDir, 'shady-element-styles.html'),
       'utf8',
     );
-    const fragment = parseFragment(fixture);
+    const fragment = parseFragment(await fixture);
 
-    expect((await parseHtmlElement(fragment)).styleTags.length).toBe(0);
+    expect(parseHtmlElement(fragment).styleTags.length).toBe(0);
   });
 
   it('Extracts <script> tags', async () => {
@@ -42,17 +42,17 @@ describe('parseHtmlElement', () => {
     appendChild(fragment, createScript());
     appendChild(fragment, createScript());
 
-    expect((await parseHtmlElement(fragment)).scriptTags.length).toBe(2);
+    expect(parseHtmlElement(fragment).scriptTags.length).toBe(2);
   });
 
   it('Does not extract <script> tags when in shadowroot', async () => {
-    const fixture = await readFile(
+    const fixture = readFile(
       join(fixtureDir, 'shady-element-scripts.html'),
       'utf8',
     );
-    const fragment = parseFragment(fixture);
+    const fragment = parseFragment(await fixture);
 
-    expect((await parseHtmlElement(fragment)).scriptTags.length).toBe(0);
+    expect(parseHtmlElement(fragment).scriptTags.length).toBe(0);
   });
 });
 

@@ -61,6 +61,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname),
+      '@/plugin': path.resolve(__dirname, 'plugin'),
     },
   },
   test: {

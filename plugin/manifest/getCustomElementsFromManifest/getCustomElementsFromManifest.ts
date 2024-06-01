@@ -5,14 +5,16 @@ import {
   Package,
 } from 'custom-elements-manifest';
 
-type DefinedElement = {
+export type DefinedElement = {
   path: string;
   tagName: string;
   className: string;
 };
 
-export function getElementsFromManifest(manifest: Package) {
-  return manifest.modules.map(getElementDeclarations);
+export function getCustomElementsFromManifest(
+  manifest: Package,
+): DefinedElement[] {
+  return manifest.modules.map(getElementDeclarations).flat();
 }
 
 function getElementDeclarations(module: JavaScriptModule): DefinedElement[] {

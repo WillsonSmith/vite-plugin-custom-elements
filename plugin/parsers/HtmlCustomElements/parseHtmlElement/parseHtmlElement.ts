@@ -4,6 +4,7 @@ import {
   getAttribute,
   getChildNodes,
   getTagName,
+  getTemplateContent,
   remove,
 } from '@web/parse5-utils';
 import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
@@ -17,13 +18,16 @@ export async function parseHtmlElement(fragment: DocumentFragment) {
   }
 
   const extracted = extractParts(fragment);
-  console.log(extracted);
   return extracted;
 }
 
 export function extractParts(fragment: DocumentFragment) {
-  const styleTags = findElements(fragment, findTag('style'));
-  const scriptTags = findElements(fragment, findTag('script'));
+  const shadowTemplate = findShadowTemplate(fragment);
+  if (shadowTemplate) {
+    console.log('Handle shadowroot element');
+  }
+  const styleTags = findStyles(fragment, shadowTemplate);
+  const scriptTags = findScripts(fragment, shadowTemplate);
 
   for (const style of styleTags) {
     remove(style);
@@ -33,6 +37,32 @@ export function extractParts(fragment: DocumentFragment) {
   }
 
   return { styleTags, scriptTags, content: getChildNodes(fragment) };
+}
+
+function findNonShaded(
+  fragment: DocumentFragment,
+  shadowTemplate: Element,
+  tagName: string,
+) {
+  return findElements(fragment, (element) => {
+    if (getTagName(element) !== tagName) return false;
+    if (shadowTemplate) {
+      const content = getTemplateContent(shadowTemplate);
+      if (findElements(content, (el) => el === element)) {
+        console.log('Is shady');
+        return false;
+      }
+    }
+    return true;
+  });
+}
+
+function findStyles(fragment: DocumentFragment, shadowTemplate: Element) {
+  return findNonShaded(fragment, shadowTemplate, 'style');
+}
+
+function findScripts(fragment: DocumentFragment, shadowTemplate: Element) {
+  return findNonShaded(fragment, shadowTemplate, 'script');
 }
 
 function findShadowTemplate(fragment: DocumentFragment) {

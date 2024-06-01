@@ -14,15 +14,28 @@ import { parseHtmlElement } from './parseHtmlElement';
 const fixtureDir = fileURLToPath(
   join(dirname(import.meta.url), '..', 'fixtures'),
 );
+
 describe('parseHtmlElement', () => {
   it('Parses element content', async () => {});
+
   it('Extracts <style> content', async () => {
-    const frag = createDocumentFragment();
-    appendChild(frag, createStyle());
-    appendChild(frag, createStyle());
-    const parsed = await parseHtmlElement(frag);
-    expect(parsed?.styleTags.length).toBe(2);
+    const fragment = createDocumentFragment();
+    appendChild(fragment, createStyle());
+    appendChild(fragment, createStyle());
+
+    expect((await parseHtmlElement(fragment)).styleTags.length).toBe(2);
   });
+
+  it('Does not extract <style> when in shadowroot', async () => {
+    const fixture = await readFile(
+      join(fixtureDir, 'shady-element.html'),
+      'utf8',
+    );
+    const fragment = parseFragment(fixture);
+
+    expect((await parseHtmlElement(fragment)).styleTags.length).toBe(0);
+  });
+
   it('Extracts <script> content', () => {});
   it('Transform <style> content', () => {});
   it('Transforms <script> sources', () => {});

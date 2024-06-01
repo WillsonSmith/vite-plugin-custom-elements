@@ -2,10 +2,10 @@ import { appendChild, createElement, getTagName } from '@web/parse5-utils';
 import { parse, parseFragment } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
-import { findCustomElements } from './findCustomElements';
+import { findCustomElements, reservedElements } from './findCustomElements';
 
-describe('Finds custom elements', () => {
-  it('finds elements in a Document', () => {
+describe('findCustomElements', () => {
+  it('Finds elements in a Document', () => {
     const doc = parse(pageTemplate(`<my-custom-element></my-custom-element`));
 
     expect(tagNames(findCustomElements(doc))).toStrictEqual([
@@ -13,7 +13,7 @@ describe('Finds custom elements', () => {
     ]);
   });
 
-  it('finds elements in a DocumentFragment', () => {
+  it('Finds elements in a DocumentFragment', () => {
     const fragment = parseFragment(fragmentTemplate());
 
     expect(tagNames(findCustomElements(fragment))).toStrictEqual([
@@ -22,7 +22,7 @@ describe('Finds custom elements', () => {
     ]);
   });
 
-  it('finds elements in an Element', () => {
+  it('Finds elements in an Element', () => {
     const element = createElement('div');
     const customElement = createElement('my-custom-element');
     appendChild(element, customElement);
@@ -31,10 +31,14 @@ describe('Finds custom elements', () => {
       'my-custom-element',
     ]);
   });
+
+  it('Does NOT find reserved elements', () => {
+    const page = parse(pageTemplate(reservedElements.join('\n')));
+    expect(findCustomElements(page).length).toBe(0);
+  });
 });
 
 // TEST HELPERS
-
 function tagNames(elements: Element[]) {
   return elements.map((element) => getTagName(element));
 }

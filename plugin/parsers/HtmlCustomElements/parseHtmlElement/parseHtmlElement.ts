@@ -9,8 +9,6 @@ import {
 } from '@web/parse5-utils';
 import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
 
-import { findTag } from '@/plugin/util/parse5';
-
 export async function parseHtmlElement(fragment: DocumentFragment) {
   const shadowTemplate = findShadowTemplate(fragment);
   if (shadowTemplate) {
@@ -18,14 +16,13 @@ export async function parseHtmlElement(fragment: DocumentFragment) {
   }
 
   const extracted = extractParts(fragment);
+
   return extracted;
 }
 
 export function extractParts(fragment: DocumentFragment) {
   const shadowTemplate = findShadowTemplate(fragment);
-  if (shadowTemplate) {
-    console.log('Handle shadowroot element');
-  }
+
   const styleTags = findStyles(fragment, shadowTemplate);
   const scriptTags = findScripts(fragment, shadowTemplate);
 
@@ -49,7 +46,6 @@ function findNonShaded(
     if (shadowTemplate) {
       const content = getTemplateContent(shadowTemplate);
       if (findElements(content, (el) => el === element)) {
-        console.log('Is shady');
         return false;
       }
     }

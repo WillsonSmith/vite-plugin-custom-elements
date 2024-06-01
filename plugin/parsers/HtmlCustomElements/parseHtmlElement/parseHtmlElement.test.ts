@@ -45,7 +45,7 @@ describe('parseHtmlElement', () => {
     expect((await parseHtmlElement(fragment)).scriptTags.length).toBe(2);
   });
 
-  it('Does not extract <style> tags when in shadowroot', async () => {
+  it('Does not extract <script> tags when in shadowroot', async () => {
     const fixture = await readFile(
       join(fixtureDir, 'shady-element-scripts.html'),
       'utf8',

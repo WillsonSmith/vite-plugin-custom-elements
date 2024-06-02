@@ -1,7 +1,6 @@
 import { fixtureDir } from '../test-helpers';
 import { createElement } from '@web/parse5-utils';
 import { describe, expect, it } from 'vitest';
-import { i } from 'vitest/dist/reporters-yx5ZTtEV.js';
 
 import { parseRequiredHtmlElements } from './parseRequiredHtmlElements';
 

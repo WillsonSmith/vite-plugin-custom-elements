@@ -16,13 +16,12 @@ describe('parseRequiredHtmlElements', () => {
   });
 
   it('Parses nested elements', async () => {
-    const customElements = [createElement('my-element')];
+    const customElements = [createElement('element-with-nested')];
     const sourceFiles = ['my-element.html', 'element-with-nested.html'].map(
       fixtureDir,
     );
 
     const parsed = await parseRequiredHtmlElements(customElements, sourceFiles);
-    console.log(parsed);
     expect(parsed.length).toBe(2);
   });
 });

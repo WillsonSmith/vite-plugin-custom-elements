@@ -9,7 +9,7 @@ import {
 } from '@web/parse5-utils';
 import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
 
-type ParsedHtmlElement = {
+export type ParsedHtmlElement = {
   styleTags: Element[];
   content: DocumentFragment;
   scriptTags: Element[];
@@ -44,7 +44,7 @@ function extractParts(fragment: DocumentFragment) {
     remove(script);
   }
 
-  return { styleTags, scriptTags, content: getChildNodes(fragment) };
+  return { styleTags, scriptTags, content: fragment };
 }
 
 function findNonShaded(

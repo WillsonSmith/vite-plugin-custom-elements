@@ -5,7 +5,8 @@ import { loadAndParseHtmlElement } from '../loadAndParseHtmlElements/loadAndPars
 import { ParsedHtmlElement } from '../parseHtmlElement/parseHtmlElement';
 import { Element, getTagName } from '@web/parse5-utils';
 
-type RequiredElement = {
+// I don't think I should use this elsewhere?
+export type RequiredElement = {
   path: string;
   tagName: string;
   parsed: ParsedHtmlElement;

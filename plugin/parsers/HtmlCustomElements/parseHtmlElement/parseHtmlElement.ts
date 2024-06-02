@@ -44,7 +44,7 @@ function extractParts(fragment: DocumentFragment) {
     remove(script);
   }
 
-  return { styleTags, scriptTags, content: getChildNodes(fragment) };
+  return { styleTags, scriptTags, content: fragment };
 }
 
 function findNonShaded(

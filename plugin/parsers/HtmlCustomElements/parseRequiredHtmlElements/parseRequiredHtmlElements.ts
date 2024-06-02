@@ -1,9 +1,12 @@
+// import { map } from '@/utility/arrays';
+import { map } from '../../../../utility/arrays';
 import { findCustomElements } from '../../findCustomElements/findCustomElements';
 import { loadAndParseHtmlElement } from '../loadAndParseHtmlElements/loadAndParseHtmlElements';
 import { ParsedHtmlElement } from '../parseHtmlElement/parseHtmlElement';
 import { Element, getTagName } from '@web/parse5-utils';
 
 type RequiredElement = {
+  path: string;
   tagName: string;
   parsed: ParsedHtmlElement;
 };
@@ -26,6 +29,7 @@ export async function parseRequiredHtmlElements(
       }
 
       result.push({
+        path: thisFile,
         tagName,
         parsed: parsed,
       });
@@ -37,16 +41,17 @@ export async function parseRequiredHtmlElements(
 }
 
 function deduplicateParsedList(list: RequiredElement[]) {
-  const collected = new Map<string, ParsedHtmlElement>();
+  const collected = new Map<string, [string, ParsedHtmlElement]>();
   for (const available of list) {
-    const { tagName, parsed } = available;
+    const { path, tagName, parsed } = available;
     if (!collected.has(tagName)) {
-      collected.set(tagName, parsed);
+      collected.set(tagName, [path, parsed]);
     }
   }
 
-  return Array.from(collected.entries()).map(([tagName, parsed]) => ({
+  return map(Array.from(collected.entries()), ([tagName, [path, parsed]]) => ({
     tagName,
+    path,
     parsed,
   }));
 }

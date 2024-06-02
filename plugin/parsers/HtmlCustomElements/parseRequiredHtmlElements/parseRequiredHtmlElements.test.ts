@@ -3,6 +3,7 @@ import { createElement } from '@web/parse5-utils';
 import { describe, expect, it } from 'vitest';
 
 import { parseRequiredHtmlElements } from './parseRequiredHtmlElements';
+import { map } from '@/utility/arrays';
 
 describe('parseRequiredHtmlElements', () => {
   it('Parses provided elements', async () => {
@@ -11,12 +12,14 @@ describe('parseRequiredHtmlElements', () => {
 
     const parsed = await parseRequiredHtmlElements(customElements, sourceFiles);
 
+    expect(parsed[0].path).toBe(fixtureDir('my-element.html'));
     expect(parsed[0].tagName).toBe('my-element');
   });
 
   it('Parses nested elements', async () => {
     const customElements = [createElement('element-with-nested')];
-    const sourceFiles = ['my-element.html', 'element-with-nested.html'].map(
+    const sourceFiles = map(
+      ['my-element.html', 'element-with-nested.html'],
       fixtureDir,
     );
 

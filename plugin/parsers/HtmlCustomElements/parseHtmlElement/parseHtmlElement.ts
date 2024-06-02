@@ -9,7 +9,7 @@ import {
 } from '@web/parse5-utils';
 import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
 
-type ParsedHtmlElement = {
+export type ParsedHtmlElement = {
   styleTags: Element[];
   content: DocumentFragment;
   scriptTags: Element[];

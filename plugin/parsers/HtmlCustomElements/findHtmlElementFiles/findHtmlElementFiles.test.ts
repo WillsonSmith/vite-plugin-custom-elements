@@ -14,6 +14,7 @@ describe('findHtmlElementFiles', () => {
       '/shady-element-styles.html',
       '/shady-element-scripts.html',
       '/my-element.html',
+      '/element-with-nested.html',
     ]);
   });
 });

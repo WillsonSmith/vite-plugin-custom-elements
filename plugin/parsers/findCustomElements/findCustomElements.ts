@@ -4,7 +4,12 @@ import { Node, findElements, getTagName } from '@web/parse5-utils';
  * @param node - A parse5 node (Document) to search
  */
 export function findCustomElements(node: Node) {
-  return findElements(node, (element) => isCustomElement(getTagName(element)));
+  return findElements(node, (element) => {
+    if (node !== element) {
+      return isCustomElement(getTagName(element));
+    }
+    return false;
+  });
 }
 
 export const reservedElements = [

@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, parseFragment } from 'parse5';
 
-import { generateManifest } from './manifest';
+import { generateManifest, getCustomElementsFromManifest } from './manifest';
 import { findCustomElements } from './parsers';
 import { findHtmlElementFiles } from './parsers/HtmlCustomElements/findHtmlElementFiles/findHtmlElementFiles';
 import { loadAndParseHtmlElements } from './parsers/HtmlCustomElements/loadAndParseHtmlElements/loadAndParseHtmlElements';
@@ -39,7 +39,20 @@ export function pluginCustomElement({
         })
         .filter(Boolean) as string[];
 
-      loadAndParseHtmlElements(files);
+      const parsedHtmlElements = loadAndParseHtmlElements(files);
+
+      const jsM = await generateManifest(projectDir);
+      const jsEls = getCustomElementsFromManifest(jsM);
+
+      // use this to get ones marked as hydratable
+      // If one has `hydrate="true"` then auto-inject
+      const includedJsEls = jsEls.filter((el) => {
+        return elements.find((element) => {
+          return getTagName(element) === el.tagName;
+        });
+      });
+
+      console.log(includedJsEls);
 
       return content;
     },

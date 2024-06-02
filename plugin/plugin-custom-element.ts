@@ -1,13 +1,28 @@
-import { appendChild, createElement, getTagName } from '@web/parse5-utils';
+import {
+  appendChild,
+  createElement,
+  findElement,
+  getChildNodes,
+  getParentNode,
+  getTagName,
+  insertBefore,
+} from '@web/parse5-utils';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { parse, parseFragment } from 'parse5';
+import { parse, parseFragment, serialize } from 'parse5';
 
 import { generateManifest, getCustomElementsFromManifest } from './manifest';
 import { findCustomElements } from './parsers';
 import { findHtmlElementFiles } from './parsers/HtmlCustomElements/findHtmlElementFiles/findHtmlElementFiles';
-import { loadAndParseHtmlElements } from './parsers/HtmlCustomElements/loadAndParseHtmlElements/loadAndParseHtmlElements';
-import { parseHtmlElement } from './parsers/HtmlCustomElements/parseHtmlElement/parseHtmlElement';
+import {
+  loadAndParseHtmlElement,
+  loadAndParseHtmlElements,
+} from './parsers/HtmlCustomElements/loadAndParseHtmlElements/loadAndParseHtmlElements';
+import {
+  ParsedHtmlElement,
+  parseHtmlElement,
+} from './parsers/HtmlCustomElements/parseHtmlElement/parseHtmlElement';
+import { findTag } from './util/parse5';
 
 const cwd = process.cwd();
 
@@ -31,15 +46,18 @@ export function pluginCustomElement({
         path.join(projectDir, elementDir),
       );
 
-      const files: string[] = elements
-        .map((element: Element) => {
-          return htmlCustomElementFiles.find((file) =>
-            file.includes(getTagName(element)),
-          );
-        })
-        .filter(Boolean) as string[];
+      const parsedElements = await parseAvailableElements(
+        elements,
+        htmlCustomElementFiles,
+      );
 
-      const parsedHtmlElements = loadAndParseHtmlElements(files);
+      parsedElements.forEach((e) => console.log(e.tagName));
+
+      // these need to include tagName
+      // const parsedHtmlElements = await loadAndParseHtmlElements(files);
+      //
+      // console.log(parsedHtmlElements);
+      // transformers go here
 
       const jsM = await generateManifest(projectDir);
       const jsEls = getCustomElementsFromManifest(jsM);
@@ -52,9 +70,39 @@ export function pluginCustomElement({
         });
       });
 
-      console.log(includedJsEls);
+      // console.log(includedJsEls);
 
-      return content;
+      return serialize(document);
     },
   };
+}
+
+type AvailableElement = {
+  tagName: string;
+  element: ParsedHtmlElement;
+};
+async function parseAvailableElements(
+  elements: Element[],
+  files: string[],
+): Promise<AvailableElement[]> {
+  const result: AvailableElement[] = [];
+
+  for (const element of elements) {
+    const tagName: string = getTagName(element);
+    const thisFile = files.find((file) => file.includes(tagName));
+
+    if (thisFile) {
+      const parsed = await loadAndParseHtmlElement(thisFile);
+      const nested = findCustomElements(parsed.content);
+      if (nested.length > 0) {
+        console.log(`nested: {{tagName}}`);
+      }
+
+      result.push({
+        tagName,
+        element: parsed,
+      });
+    }
+  }
+  return result;
 }

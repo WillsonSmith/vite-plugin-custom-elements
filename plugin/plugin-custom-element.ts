@@ -1,4 +1,4 @@
-import { getTagName } from '@web/parse5-utils';
+import { appendChild, createElement, getTagName } from '@web/parse5-utils';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, parseFragment } from 'parse5';
@@ -6,6 +6,7 @@ import { parse, parseFragment } from 'parse5';
 import { generateManifest } from './manifest';
 import { findCustomElements } from './parsers';
 import { findHtmlElementFiles } from './parsers/HtmlCustomElements/findHtmlElementFiles/findHtmlElementFiles';
+import { loadAndParseHtmlElements } from './parsers/HtmlCustomElements/loadAndParseHtmlElements/loadAndParseHtmlElements';
 import { parseHtmlElement } from './parsers/HtmlCustomElements/parseHtmlElement/parseHtmlElement';
 
 const cwd = process.cwd();
@@ -24,26 +25,21 @@ export function pluginCustomElement({
       const projectDir = path.join(cwd, root);
 
       const document = parse(content);
-      const elements = findCustomElements(document);
+      const elements: Element[] = findCustomElements(document);
 
       const htmlCustomElementFiles = await findHtmlElementFiles(
         path.join(projectDir, elementDir),
       );
 
-      const included = htmlCustomElementFiles.filter((elementFile) => {
-        return elements.find((el) => elementFile.includes(getTagName(el)));
-      });
+      const files: string[] = elements
+        .map((element: Element) => {
+          return htmlCustomElementFiles.find((file) =>
+            file.includes(getTagName(element)),
+          );
+        })
+        .filter(Boolean) as string[];
 
-      const parsed = await Promise.all(
-        included.map(async (el) => {
-          return {
-            tagName: path.basename(el).split('.html')[0],
-            parts: parseHtmlElement(parseFragment(await readFile(el, 'utf8'))),
-          };
-        }),
-      );
-
-      console.log(parsed);
+      loadAndParseHtmlElements(files);
 
       return content;
     },

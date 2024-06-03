@@ -6,7 +6,6 @@ import {
   getChildNodes,
 } from '@web/parse5-utils';
 import { parse, parseFragment } from 'parse5';
-import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
 import { describe, expect, it } from 'vitest';
 
 import { injectStyles } from './injectStyles';
@@ -27,9 +26,9 @@ describe('injectStyles', () => {
     const component = createElement('x-component');
     appendChild(document, component);
 
-    const style = createElement('style');
-    setText(style, '.my-selector { color: black; }');
-    const elements = createParsedElements(style);
+    const elements = createParsedElements(
+      createStyle('.my-selector { color: black; }'),
+    );
 
     await injectStyles(elements, document);
     const head = findElement(document, findTag('head'));
@@ -42,10 +41,9 @@ describe('injectStyles', () => {
     const component = createElement('x-component');
     appendChild(document, component);
 
-    const style = createElement('style');
-    setText(style, '.my-selector { color: black; }');
-
-    const elements = createParsedElements(style);
+    const elements = createParsedElements(
+      createStyle('.my-selector { color: black; }'),
+    );
     await injectStyles(elements, document);
 
     const head = findElement(document, findTag('head'));
@@ -60,10 +58,9 @@ describe('injectStyles', () => {
     const component = createElement('x-component');
     appendChild(document, component);
 
-    const style = createElement('style');
-    setText(style, '.my-selector { a { color: black; } }');
-
-    const elements = createParsedElements(style);
+    const elements = createParsedElements(
+      createStyle('.my-selector { a { color: black; } }'),
+    );
     await injectStyles(elements, document);
 
     const head = findElement(document, findTag('head'));
@@ -74,8 +71,9 @@ describe('injectStyles', () => {
   });
 });
 
-function setText(styleTag: DocumentFragment, content: string) {
-  styleTag.childNodes = [
+function createStyle(content: string) {
+  const style = createElement('style');
+  style.childNodes = [
     {
       nodeName: '#text',
       value: content,
@@ -83,6 +81,7 @@ function setText(styleTag: DocumentFragment, content: string) {
       attrs: [],
     },
   ];
+  return style;
 }
 
 function createParsedElements(styleTag: Element, content?: string) {

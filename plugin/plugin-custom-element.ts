@@ -1,8 +1,6 @@
 import {
   appendChild,
-  createElement,
   findElement,
-  findElements,
   getChildNodes,
   getParentNode,
   getTagName,
@@ -10,8 +8,8 @@ import {
   remove,
 } from '@web/parse5-utils';
 import path from 'node:path';
-import { parse, serialize } from 'parse5';
-import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
+import { parse, parseFragment, serialize } from 'parse5';
+import { Document, DocumentFragment } from 'parse5/dist/tree-adapters/default';
 
 import { generateManifest, getCustomElementsFromManifest } from './manifest';
 import { findCustomElements } from './parsers';
@@ -20,7 +18,7 @@ import {
   RequiredElement,
   parseRequiredHtmlElements,
 } from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements';
-import { findTag, replaceNode } from './util/parse5';
+import { findTag } from './util/parse5';
 
 const cwd = process.cwd();
 
@@ -48,9 +46,8 @@ export function pluginCustomElement({
         customElementSourceFiles,
       );
 
-      for (const element of customElements) {
-        replaceElementContents(parsedElements, element);
-      }
+      replaceElementsContent(parsedElements, document);
+      injectStyles(parsedElements, document);
 
       const jsM = await generateManifest(projectDir);
       const jsEls = getCustomElementsFromManifest(jsM);
@@ -70,36 +67,61 @@ export function pluginCustomElement({
   };
 }
 
-function replaceElementContents(
+function injectStyles(elements: RequiredElement[], root: Document) {
+  const styleSet = new Set<string>();
+
+  for (const element of elements) {
+    const tags = element.parsed.styleTags;
+    for (const tag of tags) {
+      const content = getChildNodes(tag)[0];
+      if (content.nodeName === '#text') {
+        styleSet.add(scopeStyleToElement(element.tagName, content.value));
+      }
+    }
+  }
+}
+
+function scopeStyleToElement(tagName: string, cssText: string) {
+  console.log(tagName);
+  return cssText;
+}
+
+function replaceElementsContent(
   replacers: RequiredElement[],
-  element: Element,
+  root: Document | DocumentFragment | Element,
 ) {
-  const tagName = getTagName(element);
-  const replaceWith = replacers.find((r) => r.tagName === tagName);
+  const customElements = findCustomElements(root);
 
-  const nestedElements = findCustomElements(element);
-  if (nestedElements) {
-    for (const nest of nestedElements) {
-      replaceElementContents(replacers, nest);
+  for (const customElement of customElements) {
+    const tag = getTagName(customElement);
+    const replacer = replacers.find((replacer) => {
+      return replacer.tagName === tag;
+    });
+
+    if (replacer) {
+      const cloned = cloneNode(replacer.parsed.content);
+      replaceElementsContent(replacers, cloned);
+
+      // TODO: Handle multiple slots
+      const slot = findElement(cloned, findTag('slot'));
+      const elementChildren = getChildNodes(customElement);
+      if (slot) {
+        for (const child of elementChildren) {
+          insertBefore(getParentNode(slot), child, slot);
+        }
+        remove(slot);
+      }
+
+      for (const child of elementChildren) {
+        remove(child);
+      }
+      for (const child of getChildNodes(cloned)) {
+        appendChild(customElement, child);
+      }
     }
   }
+}
 
-  const newElement = createElement(tagName);
-  const slot = findElement(replaceWith, findTag('slot'));
-  if (slot) {
-    for (const child of getChildNodes(element)) {
-      insertBefore(getParentNode(slot), child, slot);
-    }
-    remove(slot);
-  }
-
-  // I'm probably moving/removing something (child) and so it doesn't exist later.
-  if (replaceWith) {
-    for (const child of getChildNodes(replaceWith.parsed.content)) {
-      appendChild(newElement, child);
-    }
-    if (element.parentNode) {
-      replaceNode(element, newElement);
-    }
-  }
+function cloneNode(fragment: DocumentFragment) {
+  return parseFragment(serialize(fragment));
 }

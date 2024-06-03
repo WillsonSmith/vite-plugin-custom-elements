@@ -102,25 +102,20 @@ function injectScripts(
   }
 }
 
-function transformScriptImports(relativePath: string, scriptString: string) {
-  const staticImportRegex =
-    /import\s+((?:[\w*\s{},]*\s*from\s*)?['"])([^'"]+)(['"])/;
-  const dynamicImportRegex = /(import\s*\(\s*['"])([^'"]+)(['"]\s*\))/g;
+const STATIC_IMPORT_REGEX =
+  /import\s+((?:[\w*\s{},]*\s*from\s*)?['"])([^'"]+)(['"])/;
+const DYNAMIC_IMPORT_REGEX = /(import\s*\(\s*['"])([^'"]+)(['"]\s*\))/g;
 
-  let value = scriptString;
-  value = value.replace(
-    staticImportRegex,
-    (_: string, p1: string, importPath: string, p3: string) => {
-      return `import ${p1}${path.join(relativePath, importPath)}${p3}`;
-    },
-  );
-  value = value.replace(
-    dynamicImportRegex,
-    (_: string, p1: string, importPath: string, p3: string) => {
-      return `${p1}${path.join(relativePath, importPath)}${p3}`;
-    },
-  );
-  return value;
+function transformScriptImports(relativePath: string, scriptString: string) {
+  return scriptString
+    .replace(STATIC_IMPORT_REGEX, transformReplacer(relativePath, 'import '))
+    .replace(DYNAMIC_IMPORT_REGEX, transformReplacer(relativePath));
+}
+
+function transformReplacer(relativePath: string, prefix: string = '') {
+  return (_: string, p1: string, importPath: string, p3: string) => {
+    return `${prefix}${p1}${path.join(relativePath, importPath)}${p3}`;
+  };
 }
 
 async function generateHydrationScripts(

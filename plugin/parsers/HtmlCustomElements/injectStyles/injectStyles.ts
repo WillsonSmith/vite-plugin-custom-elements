@@ -42,6 +42,7 @@ export async function injectStyles(
       __location: undefined,
     },
   ];
+
   appendChild(findElement(root, findTag('head')), styleTag);
 }
 

@@ -1,3 +1,4 @@
+import { findTag } from '../../../util/parse5';
 import { findCustomElements } from '../../findCustomElements/findCustomElements';
 import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
 import {
@@ -11,8 +12,6 @@ import {
 } from '@web/parse5-utils';
 import { parseFragment, serialize } from 'parse5';
 import { Document, DocumentFragment } from 'parse5/dist/tree-adapters/default';
-
-import { findTag } from '@/plugin/util/parse5';
 
 export function replaceElementsContent(
   replacers: RequiredElement[],

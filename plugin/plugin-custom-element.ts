@@ -18,7 +18,7 @@ import {
   RequiredElement,
   parseRequiredHtmlElements,
 } from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements';
-import { findTag } from './util/parse5';
+import { replaceElementsContent } from './parsers/HtmlCustomElements/replaceElementsContent/replaceElementsContent';
 
 const cwd = process.cwd();
 
@@ -60,8 +60,6 @@ export function pluginCustomElement({
         });
       });
 
-      // console.log(includedJsEls);
-
       return serialize(document);
     },
   };
@@ -82,46 +80,5 @@ function injectStyles(elements: RequiredElement[], root: Document) {
 }
 
 function scopeStyleToElement(tagName: string, cssText: string) {
-  console.log(tagName);
   return cssText;
-}
-
-function replaceElementsContent(
-  replacers: RequiredElement[],
-  root: Document | DocumentFragment | Element,
-) {
-  const customElements = findCustomElements(root);
-
-  for (const customElement of customElements) {
-    const tag = getTagName(customElement);
-    const replacer = replacers.find((replacer) => {
-      return replacer.tagName === tag;
-    });
-
-    if (replacer) {
-      const cloned = cloneNode(replacer.parsed.content);
-      replaceElementsContent(replacers, cloned);
-
-      // TODO: Handle multiple slots
-      const slot = findElement(cloned, findTag('slot'));
-      const elementChildren = getChildNodes(customElement);
-      if (slot) {
-        for (const child of elementChildren) {
-          insertBefore(getParentNode(slot), child, slot);
-        }
-        remove(slot);
-      }
-
-      for (const child of elementChildren) {
-        remove(child);
-      }
-      for (const child of getChildNodes(cloned)) {
-        appendChild(customElement, child);
-      }
-    }
-  }
-}
-
-function cloneNode(fragment: DocumentFragment) {
-  return parseFragment(serialize(fragment));
 }

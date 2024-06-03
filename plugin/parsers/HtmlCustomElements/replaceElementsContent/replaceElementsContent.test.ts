@@ -1,3 +1,4 @@
+import { findTag } from '../../../util/parse5';
 import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
 import {
   appendChild,
@@ -6,11 +7,10 @@ import {
   findElement,
   getChildNodes,
 } from '@web/parse5-utils';
-import { parseFragment, serialize } from 'parse5';
+import { parseFragment } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
 import { replaceElementsContent } from './replaceElementsContent';
-import { findTag } from '@/plugin/util/parse5';
 
 describe('replaceElementsContent', () => {
   it('Replaces custom element content', async () => {

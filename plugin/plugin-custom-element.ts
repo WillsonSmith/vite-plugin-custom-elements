@@ -98,7 +98,7 @@ function replaceElementContents(
     for (const child of getChildNodes(replaceWith.parsed.content)) {
       appendChild(newElement, child);
     }
-    if (element) {
+    if (element.parentNode) {
       replaceNode(element, newElement);
     }
   }

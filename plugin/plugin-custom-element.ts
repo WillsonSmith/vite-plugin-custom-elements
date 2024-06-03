@@ -54,14 +54,9 @@ export function pluginCustomElement({
       replaceElementsContent(parsedElements, document);
       injectStyles(parsedElements, document);
 
-      // Hydrate marked JS elements
-      const elementsToHydrate = customElements.filter((element) => {
-        return getAttribute(element, 'hydrate') !== undefined;
-      });
-
       const hydrateScripts = await generateHydrationScripts(
         projectDir,
-        elementsToHydrate,
+        customElements,
       );
 
       for (const script of hydrateScripts) {
@@ -78,17 +73,19 @@ async function generateHydrationScripts(
   customElements: Element[],
 ) {
   const scriptSources = new Set<string>();
-  const availableElementts = getCustomElementsFromManifest(
+  const availableElements = getCustomElementsFromManifest(
     await generateManifest(dir),
   );
 
   for (const el of customElements) {
-    const available = availableElementts.find((element) => {
-      return element.tagName === getTagName(el);
-    });
+    if (getAttribute(el, 'hydrate') !== undefined) {
+      const available = availableElements.find((element) => {
+        return element.tagName === getTagName(el);
+      });
 
-    if (available) {
-      scriptSources.add(available.path.split(dir)[1]);
+      if (available) {
+        scriptSources.add(available.path.split(dir)[1]);
+      }
     }
   }
 

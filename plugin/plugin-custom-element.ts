@@ -1,15 +1,7 @@
-import {
-  appendChild,
-  findElement,
-  getChildNodes,
-  getParentNode,
-  getTagName,
-  insertBefore,
-  remove,
-} from '@web/parse5-utils';
+import { getChildNodes, getTagName } from '@web/parse5-utils';
 import path from 'node:path';
-import { parse, parseFragment, serialize } from 'parse5';
-import { Document, DocumentFragment } from 'parse5/dist/tree-adapters/default';
+import { parse, serialize } from 'parse5';
+import { Document } from 'parse5/dist/tree-adapters/default';
 
 import { generateManifest, getCustomElementsFromManifest } from './manifest';
 import { findCustomElements } from './parsers';

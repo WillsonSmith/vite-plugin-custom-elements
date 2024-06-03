@@ -1,7 +1,16 @@
-import { getChildNodes, getTagName } from '@web/parse5-utils';
+import {
+  appendChild,
+  createElement,
+  findElement,
+  getChildNodes,
+  getTagName,
+} from '@web/parse5-utils';
 import path from 'node:path';
 import { parse, serialize } from 'parse5';
 import { Document } from 'parse5/dist/tree-adapters/default';
+import postcss, { Rule, document } from 'postcss';
+// @ts-expect-error No type definitions
+import prefixSelector from 'postcss-prefix-selector';
 
 import { generateManifest, getCustomElementsFromManifest } from './manifest';
 import { findCustomElements } from './parsers';
@@ -11,6 +20,7 @@ import {
   parseRequiredHtmlElements,
 } from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements';
 import { replaceElementsContent } from './parsers/HtmlCustomElements/replaceElementsContent/replaceElementsContent';
+import { findTag } from './util/parse5';
 
 const cwd = process.cwd();
 
@@ -57,7 +67,7 @@ export function pluginCustomElement({
   };
 }
 
-function injectStyles(elements: RequiredElement[], root: Document) {
+async function injectStyles(elements: RequiredElement[], root: Document) {
   const styleSet = new Set<string>();
 
   for (const element of elements) {
@@ -65,12 +75,64 @@ function injectStyles(elements: RequiredElement[], root: Document) {
     for (const tag of tags) {
       const content = getChildNodes(tag)[0];
       if (content.nodeName === '#text') {
-        styleSet.add(scopeStyleToElement(element.tagName, content.value));
+        const scoped = await scopeStyleToElement(
+          element.tagName,
+          content.value,
+        );
+        styleSet.add(scoped);
       }
     }
   }
+
+  const styleTags = Array.from(styleSet).map((content) => {
+    const style = createElement('style');
+    style.childNodes = [
+      {
+        nodeName: '#text',
+        value: content,
+        parentNode: null,
+        attrs: [],
+        __location: undefined,
+      },
+    ];
+    return style;
+  });
+  for (const tag of styleTags) {
+    appendChild(findElement(root, findTag('head')), tag);
+  }
 }
 
-function scopeStyleToElement(tagName: string, cssText: string) {
-  return cssText;
+async function scopeStyleToElement(tagName: string, cssText: string) {
+  return postcss([
+    prefixSelector({
+      prefix: tagName,
+      transform: (
+        prefix: string,
+        selector: string,
+        prefixedSelector: string,
+        _: string,
+        rule: Rule,
+      ) => {
+        const parent = rule.parent;
+        if (parent && 'selector' in parent) {
+          const parentSel = parent.selector as string | undefined;
+          if (parentSel?.includes(prefix)) {
+            return selector;
+          }
+        }
+
+        if (['body', 'html'].some((s) => selector.startsWith(s))) {
+          return selector;
+        }
+
+        if (selector.startsWith(':host')) {
+          return prefix;
+        }
+
+        return prefixedSelector;
+      },
+    }),
+  ])
+    .process(cssText)
+    .then((res) => res.css);
 }

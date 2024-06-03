@@ -1,5 +1,7 @@
 import { BaseElement } from '../BaseElement/BaseElement';
 
+import { define } from '@/utility/define';
+
 // import './x-time.html?component';
 
 /**
@@ -26,6 +28,8 @@ export class XTime extends BaseElement {
     clearInterval(this.interval);
   }
 }
+
+define('x-time', XTime);
 
 declare global {
   interface HTMLElementTagNameMap {

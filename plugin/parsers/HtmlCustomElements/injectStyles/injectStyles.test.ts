@@ -1,6 +1,5 @@
 import {
   appendChild,
-  createDocument,
   createElement,
   findElement,
   findElements,

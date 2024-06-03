@@ -48,7 +48,9 @@ export function pluginCustomElement({
         customElementSourceFiles,
       );
 
-      console.log(parsedElements);
+      for (const element of customElements) {
+        replaceElementContents(parsedElements, element);
+      }
 
       const jsM = await generateManifest(projectDir);
       const jsEls = getCustomElementsFromManifest(jsM);
@@ -66,4 +68,38 @@ export function pluginCustomElement({
       return serialize(document);
     },
   };
+}
+
+function replaceElementContents(
+  replacers: RequiredElement[],
+  element: Element,
+) {
+  const tagName = getTagName(element);
+  const replaceWith = replacers.find((r) => r.tagName === tagName);
+
+  const nestedElements = findCustomElements(element);
+  if (nestedElements) {
+    for (const nest of nestedElements) {
+      replaceElementContents(replacers, nest);
+    }
+  }
+
+  const newElement = createElement(tagName);
+  const slot = findElement(replaceWith, findTag('slot'));
+  if (slot) {
+    for (const child of getChildNodes(element)) {
+      insertBefore(getParentNode(slot), child, slot);
+    }
+    remove(slot);
+  }
+
+  // I'm probably moving/removing something (child) and so it doesn't exist later.
+  if (replaceWith) {
+    for (const child of getChildNodes(replaceWith.parsed.content)) {
+      appendChild(newElement, child);
+    }
+    if (element) {
+      replaceNode(element, newElement);
+    }
+  }
 }

@@ -84,55 +84,46 @@ async function injectStyles(elements: RequiredElement[], root: Document) {
     }
   }
 
-  const styleTags = Array.from(styleSet).map((content) => {
-    const style = createElement('style');
-    style.childNodes = [
-      {
-        nodeName: '#text',
-        value: content,
-        parentNode: null,
-        attrs: [],
-        __location: undefined,
-      },
-    ];
-    return style;
-  });
-  for (const tag of styleTags) {
-    appendChild(findElement(root, findTag('head')), tag);
-  }
+  const styleTag = createElement('style');
+
+  styleTag.childNodes = [
+    {
+      nodeName: '#text',
+      value: Array.from(styleSet).join('\n'),
+      parentNode: null,
+      attrs: [],
+      __location: undefined,
+    },
+  ];
+  appendChild(findElement(root, findTag('head')), styleTag);
 }
 
+type TransformOptions = [string, string, string, string, Rule];
 async function scopeStyleToElement(tagName: string, cssText: string) {
-  return postcss([
+  const post = postcss([
     prefixSelector({
       prefix: tagName,
-      transform: (
-        prefix: string,
-        selector: string,
-        prefixedSelector: string,
-        _: string,
-        rule: Rule,
-      ) => {
-        const parent = rule.parent;
-        if (parent && 'selector' in parent) {
-          const parentSel = parent.selector as string | undefined;
-          if (parentSel?.includes(prefix)) {
-            return selector;
-          }
-        }
-
-        if (['body', 'html'].some((s) => selector.startsWith(s))) {
-          return selector;
-        }
-
-        if (selector.startsWith(':host')) {
-          return prefix;
-        }
-
-        return prefixedSelector;
-      },
+      transform: handleTransform,
     }),
-  ])
-    .process(cssText)
-    .then((res) => res.css);
+  ]);
+
+  return post.process(cssText).then((res) => res.css);
+}
+
+function handleTransform(...options: TransformOptions) {
+  const [prefix, selector, prefixedSelector, , rule] = options;
+  if (selector.startsWith(':host')) return prefix;
+  if (selector.startsWith('body') || selector.startsWith('html')) {
+    return selector;
+  }
+
+  if (
+    rule.parent && 'selector' in rule.parent
+      ? (rule.parent.selector as string).includes(prefix)
+      : false
+  ) {
+    return selector;
+  }
+
+  return prefixedSelector;
 }

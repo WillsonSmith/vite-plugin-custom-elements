@@ -1,17 +1,7 @@
-import {
-  appendChild,
-  createElement,
-  findElement,
-  findElements,
-  getChildNodes,
-  getParentNode,
-  getTagName,
-  insertBefore,
-  remove,
-} from '@web/parse5-utils';
+import { getChildNodes, getTagName } from '@web/parse5-utils';
 import path from 'node:path';
 import { parse, serialize } from 'parse5';
-import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
+import { Document } from 'parse5/dist/tree-adapters/default';
 
 import { generateManifest, getCustomElementsFromManifest } from './manifest';
 import { findCustomElements } from './parsers';
@@ -20,7 +10,7 @@ import {
   RequiredElement,
   parseRequiredHtmlElements,
 } from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements';
-import { findTag, replaceNode } from './util/parse5';
+import { replaceElementsContent } from './parsers/HtmlCustomElements/replaceElementsContent/replaceElementsContent';
 
 const cwd = process.cwd();
 
@@ -48,7 +38,8 @@ export function pluginCustomElement({
         customElementSourceFiles,
       );
 
-      console.log(parsedElements);
+      replaceElementsContent(parsedElements, document);
+      injectStyles(parsedElements, document);
 
       const jsM = await generateManifest(projectDir);
       const jsEls = getCustomElementsFromManifest(jsM);
@@ -61,9 +52,25 @@ export function pluginCustomElement({
         });
       });
 
-      // console.log(includedJsEls);
-
       return serialize(document);
     },
   };
+}
+
+function injectStyles(elements: RequiredElement[], root: Document) {
+  const styleSet = new Set<string>();
+
+  for (const element of elements) {
+    const tags = element.parsed.styleTags;
+    for (const tag of tags) {
+      const content = getChildNodes(tag)[0];
+      if (content.nodeName === '#text') {
+        styleSet.add(scopeStyleToElement(element.tagName, content.value));
+      }
+    }
+  }
+}
+
+function scopeStyleToElement(tagName: string, cssText: string) {
+  return cssText;
 }

@@ -32,6 +32,11 @@ describe('findCustomElements', () => {
     ]);
   });
 
+  it('Does NOT find itself', () => {
+    const element = createElement('my-custom-element');
+    expect(findCustomElements(element).length).toBe(0);
+  });
+
   it('Does NOT find reserved elements', () => {
     const page = parse(pageTemplate(reservedElements.join('\n')));
     expect(findCustomElements(page).length).toBe(0);

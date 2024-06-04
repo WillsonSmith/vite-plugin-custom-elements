@@ -17,13 +17,14 @@ export function transformShadowScripts(
   rootDir: string,
 ) {
   const scripts = findElements(template, findTag('script'));
+  const relativePath = normalizePath(element.path, rootDir);
+
   for (const script of scripts) {
     const node = getChildNodes(script)[0];
     const textContent = node?.nodeName === '#text' && node.value;
 
     const src = getAttribute(script, 'src');
     if (src) {
-      const relativePath = normalizePath(element.path, rootDir);
       setAttribute(script, 'src', path.join(relativePath, src));
       continue;
     }
@@ -31,10 +32,7 @@ export function transformShadowScripts(
     if (textContent) {
       const newScript = createScript(
         { type: 'module' },
-        transformScriptImports(
-          normalizePath(element.path, rootDir),
-          textContent,
-        ),
+        transformScriptImports(relativePath, textContent),
       );
 
       replaceNode(script, newScript);
@@ -44,7 +42,7 @@ export function transformShadowScripts(
 }
 
 function normalizePath(pathStr: string, rootDir: string) {
-  return path.dirname(pathStr).split(rootDir)[1];
+  return path.join('/', path.dirname(pathStr).split(rootDir)[1]);
 }
 
 export function injectScripts(
@@ -58,7 +56,6 @@ export function injectScripts(
 
     const relativePath = normalizePath(element.path, rootDir);
     const scriptContents = new Set<string>();
-
     for (const tag of scriptTags) {
       const src = getAttribute(tag, 'src');
       if (src) {

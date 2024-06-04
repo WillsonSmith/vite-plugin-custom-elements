@@ -5,7 +5,6 @@ import { pluginCustomElement } from './plugin/plugin-custom-element';
 
 export default defineConfig({
   build: {},
-  root: 'src',
   resolve: {
     alias: {
       '@': path.resolve(__dirname),
@@ -17,7 +16,7 @@ export default defineConfig({
   },
   plugins: [
     pluginCustomElement({
-      root: './src',
+      elementDir: '/src/components',
     }),
   ],
 });

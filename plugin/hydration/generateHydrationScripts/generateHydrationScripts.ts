@@ -4,6 +4,7 @@ import {
 } from '../../manifest';
 import { createScript, getAttribute, getTagName } from '@web/parse5-utils';
 import type { Element } from '@web/parse5-utils';
+import path from 'node:path';
 
 export async function generateHydrationScripts(
   dir: string,
@@ -27,6 +28,6 @@ export async function generateHydrationScripts(
   }
 
   return Array.from(scriptSources, (source) => {
-    return createScript({ type: 'module', src: source });
+    return createScript({ type: 'module', src: path.join('/', source) });
   });
 }

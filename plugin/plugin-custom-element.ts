@@ -136,22 +136,19 @@ function injectScripts(
   for (const element of elements) {
     const scriptTags = element.parsed.scriptTags;
     if (scriptTags.length === 0) continue;
+    const relativePath = normalizePath(element.path, rootDir);
 
     const scriptContents = new Set<string>();
-
-    const relativePath = path.dirname(element.path).split(rootDir)[1];
-
     for (const tag of scriptTags) {
       const src = getAttribute(tag, 'src');
-
       if (src) {
         setAttribute(tag, 'src', path.join(relativePath, src));
         appendChild(root, tag);
-      } else {
-        const first = getChildNodes(tag)[0];
-        if (first.nodeName === '#text') {
-          scriptContents.add(transformScriptImports(relativePath, first.value));
-        }
+      }
+
+      const first = getChildNodes(tag)[0];
+      if (first?.nodeName === '#text') {
+        scriptContents.add(transformScriptImports(relativePath, first.value));
       }
     }
 

@@ -1,19 +1,13 @@
 import {
   Element,
   appendChild,
-  createElement,
   createScript,
   findElement,
   findElements,
   getAttribute,
   getChildNodes,
-  getParentNode,
   getTagName,
-  getTemplateContent,
-  insertBefore,
-  remove,
   setAttribute,
-  setTemplateContent,
 } from '@web/parse5-utils';
 import path from 'node:path';
 import { parse, serialize } from 'parse5';
@@ -57,8 +51,9 @@ export function pluginCustomElement({
         customElementSourceFiles,
       );
 
-      replaceElementsContent(parsedElements, document);
       processShadowedItems(projectDir, parsedElements, document);
+
+      replaceElementsContent(parsedElements, document);
       injectStyles(parsedElements, document);
       injectScripts(projectDir, parsedElements, document);
 
@@ -107,6 +102,12 @@ function transformShadowScripts(
   for (const script of scripts) {
     const node = getChildNodes(script)[0];
     const textContent = node?.nodeName === '#text' && node.value;
+
+    const src = getAttribute(script, 'src');
+    if (src) {
+      const relativePath = normalizePath(element.path, rootDir);
+      setAttribute(script, 'src', path.join(relativePath, src));
+    }
 
     if (textContent) {
       const newScript = createScript(

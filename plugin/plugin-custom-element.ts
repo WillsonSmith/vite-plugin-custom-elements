@@ -82,19 +82,19 @@ function injectScripts(
     const scriptSources = new Set<string>();
     const scriptContents = new Set<string>();
 
+    const relativePath = path.dirname(element.path).split(rootDir)[1];
+
     for (const tag of scriptTags) {
       const src = getAttribute(tag, 'src');
 
       if (src) {
-        const relativePath = path.join(rootDir, src);
-        setAttribute(tag, 'src', relativePath);
+        setAttribute(tag, 'src', path.join(relativePath, src));
         appendChild(root, tag);
         return;
       }
 
       const first = getChildNodes(tag)[0];
       if (first.nodeName === '#text') {
-        const relativePath = path.dirname(element.path).split(rootDir)[1];
         scriptContents.add(transformScriptImports(relativePath, first.value));
       }
     }

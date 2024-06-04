@@ -34,9 +34,21 @@ export function replaceElementsContent(
       const elementChildren = getChildNodes(customElement);
       if (slot) {
         for (const child of elementChildren) {
-          insertBefore(getParentNode(slot), child, slot);
+          if (child.nodeName === '#text') {
+            getParentNode(slot).childNodes = [
+              {
+                nodeName: '#text',
+                value: child.value,
+                parentNode: null,
+                attrs: [],
+                __location: undefined,
+              },
+            ];
+          } else {
+            insertBefore(getParentNode(slot), child, slot);
+            remove(slot);
+          }
         }
-        remove(slot);
       }
 
       for (const child of elementChildren) {

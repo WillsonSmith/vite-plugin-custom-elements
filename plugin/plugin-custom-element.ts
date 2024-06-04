@@ -6,6 +6,7 @@ import {
   getAttribute,
   getChildNodes,
   getTagName,
+  setAttribute,
 } from '@web/parse5-utils';
 import path from 'node:path';
 import { parse, serialize } from 'parse5';
@@ -76,7 +77,6 @@ function injectScripts(
   const scripts: Element[] = [];
   for (const element of elements) {
     const scriptTags = element.parsed.scriptTags;
-    console.log(element.tagName, element);
     if (scriptTags.length === 0) continue;
 
     const scriptSources = new Set<string>();
@@ -86,7 +86,10 @@ function injectScripts(
       const src = getAttribute(tag, 'src');
 
       if (src) {
-        console.log(src);
+        const relativePath = path.join(rootDir, src);
+        setAttribute(tag, 'src', relativePath);
+        appendChild(root, tag);
+        return;
       }
 
       const first = getChildNodes(tag)[0];

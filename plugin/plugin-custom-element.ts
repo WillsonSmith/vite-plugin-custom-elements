@@ -7,10 +7,10 @@ import {
 import path from 'node:path';
 import { parse, serialize } from 'parse5';
 
+import { generateHydrationScripts } from './hydration/generateHydrationScripts/generateHydrationScripts';
 import { findCustomElements } from './parsers';
 import { findHtmlElementFiles } from './parsers/HtmlCustomElements/findHtmlElementFiles/findHtmlElementFiles';
 import {
-  generateHydrationScripts,
   injectScripts,
   transformShadowScripts,
 } from './parsers/HtmlCustomElements/injectScripts/injectScripts';

@@ -3,6 +3,7 @@ import {
   getCustomElementsFromManifest,
 } from '../../manifest';
 import { createScript, getAttribute, getTagName } from '@web/parse5-utils';
+import type { Element } from '@web/parse5-utils';
 
 export async function generateHydrationScripts(
   dir: string,

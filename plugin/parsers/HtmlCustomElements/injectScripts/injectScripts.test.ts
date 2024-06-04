@@ -1,11 +1,9 @@
 import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
 import {
-  appendChild,
   createDocument,
   createElement,
   createScript,
   findElement,
-  findElements,
   getAttribute,
   getChildNodes,
   getTemplateContent,
@@ -110,5 +108,3 @@ describe('transformShadowScripts', () => {
     expect(src).toBe('/tags/test.ts');
   });
 });
-//
-// describe('generateHydrationScripts', () => {});

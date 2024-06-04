@@ -12,9 +12,16 @@
         margin: 0;
       }
     </style>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/light.css"
+    />
   </head>
 
   <body>
+    <main>
+      <x-nav><h1 slot="title">Page Title</h1></x-nav>
+    </main>
     <x-nav>Title!</x-nav>
     <x-layout hydrate>
       <h1>Home</h1>

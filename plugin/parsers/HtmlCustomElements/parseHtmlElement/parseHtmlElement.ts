@@ -36,9 +36,6 @@ export function parseHtmlElement(
 function extractParts(fragment: DocumentFragment) {
   const shadowTemplate = findShadowTemplate(fragment);
 
-  if (shadowTemplate) {
-  }
-  //here's a problem
   const styleTags = findStyles(fragment, shadowTemplate);
   const scriptTags = findScripts(fragment, shadowTemplate);
 
@@ -59,7 +56,7 @@ function findNonShaded(
 ) {
   return findElements(fragment, (element) => {
     if (getTagName(element) !== tagName) return false;
-    // something is wrong wtih this
+
     if (shadowTemplate) {
       const within = findElement(getTemplateContent(shadowTemplate), (el) => {
         return el === element;

@@ -16,12 +16,14 @@
   }
 </style>
 
-<x-nav-title></x-nav-title>
-<nav>
-  <a href="/">Home</a>
-  <a href="/about">About</a>
-  <a href="/blog">Blog</a>
-</nav>
+<div class="x-nav">
+  <slot name="title"></slot>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/blog">Blog</a>
+  </nav>
+</div>
 
 <script type="module">
   console.log('test');

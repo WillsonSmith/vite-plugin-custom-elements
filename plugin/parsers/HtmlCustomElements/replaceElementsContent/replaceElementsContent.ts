@@ -45,14 +45,17 @@ export function replaceElementsContent(
         for (const child of elementChildren) {
           if (child.nodeName === 'slot') continue;
 
-          // idk something with
           if (isTextNode(child)) {
             const content = child.value;
 
-            appendChild(getParentNode(slot), {
-              nodeName: '#text',
-              value: content,
-            });
+            insertBefore(
+              getParentNode(slot),
+              {
+                nodeName: '#text',
+                value: content,
+              },
+              slot,
+            );
             remove(child);
           } else {
             insertBefore(getParentNode(slot), child, slot);

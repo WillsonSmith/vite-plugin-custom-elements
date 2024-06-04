@@ -22,7 +22,9 @@ type SourceScript = {
 };
 
 async function findScripts(directory: string): Promise<SourceScript[]> {
-  const files = await glob(path.join(directory, '/**/*.{ts,js}'));
+  const files = await glob(path.join(directory, '/**/*.{ts,js}'), {
+    ignore: 'node_modules/**',
+  });
 
   return files.map((filePath: string) => {
     return { path: filePath, file: readFile(filePath, 'utf8') };

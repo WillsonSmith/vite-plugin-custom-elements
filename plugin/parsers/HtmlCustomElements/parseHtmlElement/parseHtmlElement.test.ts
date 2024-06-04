@@ -54,6 +54,16 @@ describe('parseHtmlElement', () => {
 
     expect(parseHtmlElement(fragment).scriptTags.length).toBe(0);
   });
+  it('Extract <script> tags when next to shadowroot', async () => {
+    const fixture = readFile(
+      join(fixtureDir, 'shady-element-scripts-external.html'),
+      'utf8',
+    );
+    const fragment = parseFragment(await fixture);
+
+    const parsed = parseHtmlElement(fragment);
+    expect(parsed.scriptTags.length).toBe(1);
+  });
 });
 
 function normalize(path: string): string {

@@ -1,3 +1,4 @@
+import { findTag } from '../../../util/parse5';
 import {
   appendChild,
   createElement,
@@ -9,7 +10,6 @@ import { parse, parseFragment } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
 import { injectStyles } from './injectStyles';
-import { findTag } from '@/plugin/util/parse5';
 
 const DOCUMENT_TEMPLATE = `
       <!doctype html>

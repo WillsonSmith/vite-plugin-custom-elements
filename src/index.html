@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home</title>
     <style>
+      :host {
+        display: inline-block;
+      }
       h1 {
         margin: 0;
       }
@@ -13,10 +16,13 @@
 
   <body>
     <x-nav>Title!</x-nav>
-    <x-layout>
+    <x-layout hydrate>
       <h1>Home</h1>
       <x-time></x-time>
       <p>Lorem ipsum or whatever.</p>
+      <div>
+        <x-button>This is my button</x-button>
+      </div>
     </x-layout>
 
     <x-layout>
@@ -24,10 +30,11 @@
     </x-layout>
 
     <x-layout>
-      <x-shadow-content>
+      <x-shadow-content hydrate>
         <x-time></x-time>
         <p>This is my shadow content.</p>
       </x-shadow-content>
     </x-layout>
+    <x-button>Hello</x-button>
   </body>
 </html>

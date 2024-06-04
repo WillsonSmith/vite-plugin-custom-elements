@@ -1,13 +1,26 @@
-import { getTagName } from '@web/parse5-utils';
+import {
+  Element,
+  appendChild,
+  findElement,
+  getAttribute,
+} from '@web/parse5-utils';
 import path from 'node:path';
 import { parse, serialize } from 'parse5';
 
-import { generateManifest, getCustomElementsFromManifest } from './manifest';
+import { generateHydrationScripts } from './hydration/generateHydrationScripts/generateHydrationScripts';
 import { findCustomElements } from './parsers';
 import { findHtmlElementFiles } from './parsers/HtmlCustomElements/findHtmlElementFiles/findHtmlElementFiles';
+import {
+  injectScripts,
+  transformShadowScripts,
+} from './parsers/HtmlCustomElements/injectScripts/injectScripts';
 import { injectStyles } from './parsers/HtmlCustomElements/injectStyles/injectStyles';
-import { parseRequiredHtmlElements } from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements';
+import {
+  RequiredElement,
+  parseRequiredHtmlElements,
+} from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements';
 import { replaceElementsContent } from './parsers/HtmlCustomElements/replaceElementsContent/replaceElementsContent';
+import { findTag } from './util/parse5';
 
 const cwd = process.cwd();
 
@@ -23,6 +36,7 @@ export function pluginCustomElement({
     name: 'plugin-custom-element',
     transformIndexHtml: async (content: string) => {
       const document = parse(content);
+      const body = findElement(document, findTag('body'));
 
       const projectDir = path.join(cwd, root);
       const customElements: Element[] = findCustomElements(document);
@@ -35,21 +49,39 @@ export function pluginCustomElement({
         customElementSourceFiles,
       );
 
+      processShadowedItems(projectDir, parsedElements);
       replaceElementsContent(parsedElements, document);
+
       injectStyles(parsedElements, document);
+      injectScripts(projectDir, parsedElements, document);
 
-      const jsM = await generateManifest(projectDir);
-      const jsEls = getCustomElementsFromManifest(jsM);
+      const hydrateScripts = await generateHydrationScripts(
+        projectDir,
+        customElements,
+      );
 
-      // use this to get ones marked as hydratable
-      // If one has `hydrate="true"` then auto-inject
-      const includedJsEls = jsEls.filter((el) => {
-        return customElements.find((element) => {
-          return getTagName(element) === el.tagName;
-        });
-      });
+      for (const script of hydrateScripts) {
+        appendChild(body, script);
+      }
 
       return serialize(document);
     },
   };
+}
+
+function processShadowedItems(rootDir: string, elements: RequiredElement[]) {
+  for (const element of elements) {
+    const content = element.parsed.content;
+
+    const template = findElement(content, (element) => {
+      return (
+        element.tagName === 'template' &&
+        getAttribute(element, 'shadowrootmode') === 'open'
+      );
+    });
+
+    if (template) {
+      transformShadowScripts(template, element, rootDir);
+    }
+  }
 }

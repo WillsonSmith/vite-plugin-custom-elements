@@ -1,12 +1,19 @@
 import {
   Element,
   appendChild,
+  createElement,
   createScript,
   findElement,
+  findElements,
   getAttribute,
   getChildNodes,
+  getParentNode,
   getTagName,
+  getTemplateContent,
+  insertBefore,
+  remove,
   setAttribute,
+  setTemplateContent,
 } from '@web/parse5-utils';
 import path from 'node:path';
 import { parse, serialize } from 'parse5';
@@ -21,7 +28,7 @@ import {
   parseRequiredHtmlElements,
 } from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements';
 import { replaceElementsContent } from './parsers/HtmlCustomElements/replaceElementsContent/replaceElementsContent';
-import { findTag } from './util/parse5';
+import { findTag, replaceNode } from './util/parse5';
 
 const cwd = process.cwd();
 
@@ -50,9 +57,9 @@ export function pluginCustomElement({
         customElementSourceFiles,
       );
 
+      processShadowedItems(projectDir, parsedElements, document);
       replaceElementsContent(parsedElements, document);
       injectStyles(parsedElements, document);
-
       injectScripts(projectDir, parsedElements, document);
 
       const hydrateScripts = await generateHydrationScripts(
@@ -69,17 +76,68 @@ export function pluginCustomElement({
   };
 }
 
+function processShadowedItems(
+  rootDir: string,
+  elements: RequiredElement[],
+  root: Element | DocumentFragment | Document,
+) {
+  for (const element of elements) {
+    const content = element.parsed.content;
+
+    const template = findElement(content, (element) => {
+      return (
+        element.tagName === 'template' &&
+        getAttribute(element, 'shadowrootmode') === 'open'
+      );
+    });
+
+    if (template) {
+      const c = getTemplateContent(
+        transformShadowScripts(template, element, rootDir),
+      );
+
+      setTemplateContent(template, getTemplateContent(c));
+    }
+  }
+}
+
+function transformShadowScripts(
+  template: Element,
+  element: RequiredElement,
+  rootDir: string,
+) {
+  const scripts = findElements(template, findTag('script'));
+
+  for (const script of scripts) {
+    const node = getChildNodes(script)[0];
+    const nodeType = node?.nodeName;
+
+    const text = nodeType === '#text' && node.value;
+    if (text) {
+      const newScript = createScript(
+        { type: 'module' },
+        transformScriptImports(normalizePath(element.path, rootDir), text),
+      );
+
+      replaceNode(script, newScript);
+    }
+  }
+  return template;
+}
+
+function normalizePath(pathStr: string, rootDir: string) {
+  return path.dirname(pathStr).split(rootDir)[1];
+}
+
 function injectScripts(
   rootDir: string,
   elements: RequiredElement[],
   root: Element | Document | DocumentFragment,
 ) {
-  const scripts: Element[] = [];
   for (const element of elements) {
     const scriptTags = element.parsed.scriptTags;
     if (scriptTags.length === 0) continue;
 
-    const scriptSources = new Set<string>();
     const scriptContents = new Set<string>();
 
     const relativePath = path.dirname(element.path).split(rootDir)[1];

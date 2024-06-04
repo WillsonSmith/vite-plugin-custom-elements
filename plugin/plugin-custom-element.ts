@@ -76,6 +76,7 @@ function injectScripts(
   const scripts: Element[] = [];
   for (const element of elements) {
     const scriptTags = element.parsed.scriptTags;
+    console.log(element.tagName, element);
     if (scriptTags.length === 0) continue;
 
     const scriptSources = new Set<string>();

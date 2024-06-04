@@ -44,11 +44,13 @@
   <!--   logger('from w/in x-shadow'); -->
   <!-- </script> -->
   <!---->
+
   <script type="module">
     console.log('hi');
   </script>
 </template>
 
-<!-- <script type="module"> -->
-<!--   import { logger } from './x-time/logger.ts'; -->
-<!-- </script> -->
+<script type="module" src="./x-time/logger.ts"></script>
+<script type="module">
+  import { logger } from './x-time/logger.ts';
+</script>

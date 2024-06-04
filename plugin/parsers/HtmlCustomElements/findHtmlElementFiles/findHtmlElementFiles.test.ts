@@ -13,6 +13,7 @@ describe('findHtmlElementFiles', () => {
     expect(htmlElements.map(normalize)).toStrictEqual([
       '/shady-element-styles.html',
       '/shady-element-scripts.html',
+      '/shady-element-scripts-external.html',
       '/my-element.html',
       '/element-with-nested.html',
     ]);

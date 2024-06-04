@@ -39,17 +39,22 @@
   <script type="module" src="./x-time/logger.ts"></script>
 
   <script type="module">
-    import { logger } from './x-time/logger.ts';
-
-    logger('from w/in x-shadow');
+    console.log('INSIDE TEMPLATE: x-shadow-content');
   </script>
 
   <script type="module">
-    console.log('hi');
+    import { logger } from './x-time/logger.ts';
+
+    console.log('INSIDE TEMPLATE: x-shadow-content');
+  </script>
+
+  <script type="module">
+    console.log('INSIDE TEMPLATE: x-shadow-root');
   </script>
 </template>
 
-<script type="module" src="./x-time/logger.ts"></script>
 <script type="module">
   import { logger } from './x-time/logger.ts';
+
+  console.log('OUTSIDE TEMPLATE: x-shadow-root');
 </script>

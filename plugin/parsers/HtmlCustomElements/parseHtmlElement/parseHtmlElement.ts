@@ -1,3 +1,4 @@
+import { findTag } from '../../../util/parse5';
 import {
   findElement,
   findElements,
@@ -7,6 +8,7 @@ import {
   getTemplateContent,
   remove,
 } from '@web/parse5-utils';
+import { serialize } from 'parse5';
 import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
 
 export type ParsedHtmlElement = {
@@ -22,11 +24,11 @@ export function parseHtmlElement(
   fragment: DocumentFragment,
 ): ParsedHtmlElement {
   const shadowTemplate = findShadowTemplate(fragment);
+
+  const extracted = extractParts(fragment);
   if (shadowTemplate) {
     console.log('Handle shadowroot element');
   }
-
-  const extracted = extractParts(fragment);
 
   return extracted;
 }
@@ -34,6 +36,9 @@ export function parseHtmlElement(
 function extractParts(fragment: DocumentFragment) {
   const shadowTemplate = findShadowTemplate(fragment);
 
+  if (shadowTemplate) {
+  }
+  //here's a problem
   const styleTags = findStyles(fragment, shadowTemplate);
   const scriptTags = findScripts(fragment, shadowTemplate);
 
@@ -54,11 +59,12 @@ function findNonShaded(
 ) {
   return findElements(fragment, (element) => {
     if (getTagName(element) !== tagName) return false;
+    // something is wrong wtih this
     if (shadowTemplate) {
-      const content = getTemplateContent(shadowTemplate);
-      if (findElements(content, (el) => el === element)) {
-        return false;
-      }
+      const within = findElement(getTemplateContent(shadowTemplate), (el) => {
+        return el === element;
+      });
+      if (within) return false;
     }
     return true;
   });

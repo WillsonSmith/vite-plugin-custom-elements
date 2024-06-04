@@ -57,8 +57,8 @@ export function pluginCustomElement({
         customElementSourceFiles,
       );
 
-      processShadowedItems(projectDir, parsedElements, document);
       replaceElementsContent(parsedElements, document);
+      processShadowedItems(projectDir, parsedElements, document);
       injectStyles(parsedElements, document);
       injectScripts(projectDir, parsedElements, document);
 
@@ -92,11 +92,7 @@ function processShadowedItems(
     });
 
     if (template) {
-      const c = getTemplateContent(
-        transformShadowScripts(template, element, rootDir),
-      );
-
-      setTemplateContent(template, getTemplateContent(c));
+      transformShadowScripts(template, element, rootDir);
     }
   }
 }
@@ -110,13 +106,15 @@ function transformShadowScripts(
 
   for (const script of scripts) {
     const node = getChildNodes(script)[0];
-    const nodeType = node?.nodeName;
+    const textContent = node?.nodeName === '#text' && node.value;
 
-    const text = nodeType === '#text' && node.value;
-    if (text) {
+    if (textContent) {
       const newScript = createScript(
         { type: 'module' },
-        transformScriptImports(normalizePath(element.path, rootDir), text),
+        transformScriptImports(
+          normalizePath(element.path, rootDir),
+          textContent,
+        ),
       );
 
       replaceNode(script, newScript);

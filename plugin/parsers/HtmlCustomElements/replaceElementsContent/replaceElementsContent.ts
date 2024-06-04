@@ -4,10 +4,12 @@ import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlE
 import {
   appendChild,
   findElement,
+  getAttribute,
   getChildNodes,
   getParentNode,
   getTagName,
   insertBefore,
+  isTextNode,
   remove,
 } from '@web/parse5-utils';
 import { parseFragment, serialize } from 'parse5';
@@ -27,6 +29,13 @@ export function replaceElementsContent(
 
     if (replacer) {
       const cloned = cloneNode(replacer.parsed.content);
+      const isTemplate = findElement(cloned, (el) => {
+        return (
+          el.nodeName === 'template' &&
+          getAttribute(el, 'shadowrootmode') === 'open'
+        );
+      });
+
       replaceElementsContent(replacers, cloned);
 
       // TODO: Handle multiple slots
@@ -34,25 +43,28 @@ export function replaceElementsContent(
       const elementChildren = getChildNodes(customElement);
       if (slot) {
         for (const child of elementChildren) {
-          if (child.nodeName === '#text') {
-            getParentNode(slot).childNodes = [
-              {
-                nodeName: '#text',
-                value: child.value,
-                parentNode: null,
-                attrs: [],
-                __location: undefined,
-              },
-            ];
+          if (child.nodeName === 'slot') continue;
+
+          // idk something with
+          if (isTextNode(child)) {
+            const content = child.value;
+
+            appendChild(getParentNode(slot), {
+              nodeName: '#text',
+              value: content,
+            });
+            remove(child);
           } else {
             insertBefore(getParentNode(slot), child, slot);
-            remove(slot);
           }
         }
+        // remove(slot);
       }
 
-      for (const child of elementChildren) {
-        remove(child);
+      if (!isTemplate) {
+        for (const child of elementChildren) {
+          remove(child);
+        }
       }
       for (const child of getChildNodes(cloned)) {
         appendChild(customElement, child);

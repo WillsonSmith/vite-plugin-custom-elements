@@ -5,11 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home</title>
     <style>
-      :host {
-        display: inline-block;
+      body {
+        font-family: var(--sl-font-sans);
       }
-      h1 {
+      h1, p {
         margin: 0;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sl-spacing-medium);
+      }
+
+      form {
+        padding: var(--sl-spacing-medium);
+        display: flex;
+        flex-direction: column;
+        gap: var(--sl-spacing-medium);
+        background: #efefef;
+      }
+      x-button {
+        background: #fff;
       }
     </style>
     <link
@@ -20,28 +37,24 @@
 
   <body>
     <main>
-      <x-nav><h1 slot="title">Page Title</h1></x-nav>
+      <div class="container">
+      <x-nav>
+        <h1 slot="title">Page Title</h1>
+        <span>Some other stuff<span>
+      </x-nav>
+
+      <x-layout>
+        <p>Some laid-out content</p>
+        <form>
+          <label>
+            <p>input</p>
+            <input type="text"></input>
+          </label>
+          <x-button>BUTTON</x-button>
+        </form>
+      </x-layout>
+
+      <x-shadow-content>Hello</x-shadow-content>
     </main>
-    <x-nav>Title!</x-nav>
-    <x-layout hydrate>
-      <h1>Home</h1>
-      <x-time></x-time>
-      <p>Lorem ipsum or whatever.</p>
-      <div>
-        <x-button>This is my button</x-button>
-      </div>
-    </x-layout>
-
-    <x-layout>
-      <x-time></x-time>
-    </x-layout>
-
-    <x-layout>
-      <x-shadow-content hydrate>
-        <x-time></x-time>
-        <p>This is my shadow content.</p>
-      </x-shadow-content>
-    </x-layout>
-    <x-button>Hello</x-button>
   </body>
 </html>

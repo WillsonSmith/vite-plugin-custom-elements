@@ -147,12 +147,11 @@ function injectScripts(
       if (src) {
         setAttribute(tag, 'src', path.join(relativePath, src));
         appendChild(root, tag);
-        return;
-      }
-
-      const first = getChildNodes(tag)[0];
-      if (first.nodeName === '#text') {
-        scriptContents.add(transformScriptImports(relativePath, first.value));
+      } else {
+        const first = getChildNodes(tag)[0];
+        if (first.nodeName === '#text') {
+          scriptContents.add(transformScriptImports(relativePath, first.value));
+        }
       }
     }
 

@@ -51,9 +51,9 @@ export function pluginCustomElement({
         customElementSourceFiles,
       );
 
-      processShadowedItems(projectDir, parsedElements, document);
-
+      processShadowedItems(projectDir, parsedElements);
       replaceElementsContent(parsedElements, document);
+
       injectStyles(parsedElements, document);
       injectScripts(projectDir, parsedElements, document);
 
@@ -71,11 +71,7 @@ export function pluginCustomElement({
   };
 }
 
-function processShadowedItems(
-  rootDir: string,
-  elements: RequiredElement[],
-  root: Element | DocumentFragment | Document,
-) {
+function processShadowedItems(rootDir: string, elements: RequiredElement[]) {
   for (const element of elements) {
     const content = element.parsed.content;
 
@@ -136,9 +132,10 @@ function injectScripts(
   for (const element of elements) {
     const scriptTags = element.parsed.scriptTags;
     if (scriptTags.length === 0) continue;
-    const relativePath = normalizePath(element.path, rootDir);
 
+    const relativePath = normalizePath(element.path, rootDir);
     const scriptContents = new Set<string>();
+
     for (const tag of scriptTags) {
       const src = getAttribute(tag, 'src');
       if (src) {

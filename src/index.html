@@ -41,6 +41,9 @@
       <x-nav>
         <h1 slot="title">Page Title</h1>
         <span>Some other stuff<span>
+        <a href="/" slot="additional-links">Some</a>
+        <a href="/" slot="additional-links">Additional</a>
+        <a href="/" slot="additional-links">Links</a>
       </x-nav>
 
       <x-layout>
@@ -54,7 +57,11 @@
         </form>
       </x-layout>
 
-      <x-shadow-content>Hello</x-shadow-content>
+      <x-shadow-content>
+        <p>
+          This is a paragraph slotted in a shadow component.
+        </p>
+      </x-shadow-content>
     </main>
   </body>
 </html>

@@ -3,66 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home</title>
-    <style>
-      body {
-        font-family: var(--sl-font-sans);
-      }
-      h1, p {
-        margin: 0;
-      }
-
-      .container {
-        display: flex;
-        flex-direction: column;
-        gap: var(--sl-spacing-medium);
-      }
-
-      form {
-        padding: var(--sl-spacing-medium);
-        display: flex;
-        flex-direction: column;
-        gap: var(--sl-spacing-medium);
-        background: #efefef;
-      }
-      x-button {
-        background: #fff;
-      }
-    </style>
+    <title>plugin-custom-element</title>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/light.css"
     />
+    <link rel="stylesheet" href="./styles/main.css" />
+    <style>
+      page-header {
+        display: block;
+        padding-block: var(--sl-spacing-small);
+        padding-inline: var(--sl-spacing-medium);
+      }
+      .title {
+        font-size: var(--sl-font-size-large);
+        font-weight: var(--sl-font-weight-bold);
+        letter-spacing: var(--sl-letter-spacing-denser);
+        font-family: var(--sl-font-mono);
+      }
+
+      h2 {
+        font-size: var(--sl-font-size-x-large);
+        font-weight: var(--sl-font-weight-semibold);
+        line-height: var(--sl-line-height-denser);
+      }
+    </style>
   </head>
-
   <body>
+    <page-header>
+      <h1 class="title" slot="title">Plugin Custom Element</h1>
+      <live-clock hydrate></live-clock>
+    </page-header>
     <main>
-      <div class="container">
-      <x-nav>
-        <!-- I think these are just being injected as children -->
-        <h1 slot="title">Page Title</h1>
-        <span>Some other stuff</span>
-            <!-- something weird here-->
-        <a href="/" slot="additional-links">Some</a>
-        <a href="/" slot="additional-links">Additional</a>
-        <a href="/" slot="additional-links">Links</a>
-      </x-nav>
-
-      <x-layout>
-        <p>Some laid-out content</p>
-        <form>
-          <label>
-            <p>input</p>
-            <input type="text"></input>
-          </label>
-        </form>
-      </x-layout>
-
-      <x-shadow-content>
-        <p>
-          This is a paragraph slotted in a shadow component.
-        </p>
-      </x-shadow-content>
+      <div class="content">
+        <content-block>
+          <h2 slot="title">What dis?</h2>
+          <p>
+            <code>plugin-custom-element</code> is a vite plugin for building
+            websites plus a little more.
+          </p>
+        </content-block>
+      </div>
     </main>
   </body>
 </html>

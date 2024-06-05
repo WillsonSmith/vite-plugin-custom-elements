@@ -1,0 +1,33 @@
+<style>
+  :host {
+    --border: 1px solid var(--sl-color-neutral-1000);
+    display: block;
+    border-block-start: var(--border);
+    border-block-end: var(--border);
+
+    padding-inline: var(--sl-spacing-large);
+    padding-block: var(--sl-spacing-medium);
+  }
+
+  .content-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    margin-bottom: var(--sl-spacing-small);
+  }
+  section {
+    width: minmax(100%, 100ch);
+  }
+</style>
+
+<div class="content-block">
+  <section>
+    <header>
+      <slot name="title"></slot>
+    </header>
+    <slot></slot>
+  </section>
+</div>

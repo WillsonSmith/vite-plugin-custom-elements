@@ -1,0 +1,25 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+h1, h2, h3, h4, h5, h6 {
+  line-height: var(--sl-line-height-denser);
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  margin: 0;
+}
+
+code {
+  font-family: var(--sl-font-mono);
+}
+
+body {
+  font-family: var(--sl-font-sans);
+}
+
+

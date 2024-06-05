@@ -3,6 +3,7 @@ import { findCustomElements } from '../../findCustomElements/findCustomElements'
 import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
 import {
   Element,
+  appendChild,
   findElement,
   findElements,
   getAttribute,
@@ -50,33 +51,37 @@ export function replaceElementsContent(
     const primarySlot = slots.find((slot) => !getAttribute(slot, 'name'));
     const primarySlotParent = primarySlot && getParentNode(primarySlot);
 
-    if (!isShadow) {
-      for (const child of elementChildren) {
-        const slotName = getAttribute(child, 'slot');
-        if (slotName) {
-          const slot = namedSlots.find(
-            (slot) => slotName === getAttribute(slot, 'name'),
-          );
-
-          if (slot) {
-            insertBefore(getParentNode(slot), child, slot);
-            continue;
-          }
-        }
-
-        if (primarySlot) {
-          if (isTextNode(child)) {
-            insertTextBefore(primarySlotParent, child.value, primarySlot);
-            continue;
-          }
-          insertBefore(primarySlotParent, child, primarySlot);
-        }
+    if (isShadow) {
+      for (const child of getChildNodes(cloned)) {
+        appendChild(customElement, child);
       }
-      for (const slot of slots) {
-        remove(slot);
-      }
+      continue;
     }
 
+    for (const child of elementChildren) {
+      const slotName = getAttribute(child, 'slot');
+      if (slotName) {
+        const slot = namedSlots.find(
+          (slot) => slotName === getAttribute(slot, 'name'),
+        );
+
+        if (slot) {
+          insertBefore(getParentNode(slot), child, slot);
+          continue;
+        }
+      }
+
+      if (primarySlot) {
+        if (isTextNode(child)) {
+          insertTextBefore(primarySlotParent, child.value, primarySlot);
+          continue;
+        }
+        insertBefore(primarySlotParent, child, primarySlot);
+      }
+    }
+    for (const slot of slots) {
+      remove(slot);
+    }
     customElement.childNodes = getChildNodes(cloned);
   }
 }

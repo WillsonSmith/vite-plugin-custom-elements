@@ -25,12 +25,10 @@ export function replaceElementsContent(
   const customElements = findCustomElements(root);
 
   for (const customElement of customElements) {
-    const tag = getTagName(customElement);
-    const replacer = replacers.find((replacer) => {
-      return replacer.tagName === tag;
-    });
-
-    if (!replacer) continue;
+    const replacer = replacers.find(
+      (r) => getTagName(customElement) === r.tagName,
+    );
+    if (replacer === undefined) continue;
 
     const cloned = cloneNode(replacer.parsed.content);
     replaceElementsContent(replacers, cloned);

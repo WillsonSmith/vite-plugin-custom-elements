@@ -26,62 +26,73 @@ export function replaceElementsContent(
 
   for (const customElement of customElements) {
     const replacer = replacers.find(
-      (r) => getTagName(customElement) === r.tagName,
+      (replacer) => getTagName(customElement) === replacer.tagName,
     );
-    if (replacer === undefined) continue;
 
-    const cloned = cloneNode(replacer.parsed.content);
-    replaceElementsContent(replacers, cloned);
+    if (replacer === undefined) {
+      continue;
+    }
 
-    const isShadow = findElement(replacer.parsed.content, (el) => {
-      return (
-        el.tagName === 'template' &&
-        getAttribute(el, 'shadowrootmode') === 'open'
-      );
-    });
+    const replacerContent = replacer.parsed.content;
+    const replacerClone = cloneNode(replacerContent);
+    replaceElementsContent(replacers, replacerClone);
 
-    const slots = findElements(cloned, findTag('slot'));
-    const elementChildren = getChildNodes(customElement);
+    const replacerSlots = findElements(replacerClone, findTag('slot'));
+    const [namedSlots, unnamedSlots] = getSlotTypes(replacerSlots);
 
-    const [namedSlots, unnamedSlots] = getSlotTypes(slots);
-
-    const primarySlot = unnamedSlots[0];
-    const primarySlotParent = primarySlot
-      ? getParentNode(primarySlot)
+    const unnamedSlot = unnamedSlots[0];
+    const unnamedSlotParent = unnamedSlot
+      ? getParentNode(unnamedSlot)
       : undefined;
 
-    if (isShadow) {
-      for (const child of getChildNodes(cloned)) {
+    const shadowTemplate = findElement(
+      replacerContent,
+      (el) =>
+        el.tagName === 'template' &&
+        getAttribute(el, 'shadowrootmode') === 'open',
+    );
+
+    if (shadowTemplate !== null) {
+      for (const child of getChildNodes(replacerClone)) {
         appendChild(customElement, child);
       }
       continue;
     }
 
-    for (const child of elementChildren) {
-      const slotName = getAttribute(child, 'slot');
+    const currentElementChildren = getChildNodes(customElement);
+    for (const currentElementChild of currentElementChildren) {
+      const childSlotName = getAttribute(currentElementChild, 'slot');
 
-      if (slotName) {
-        const slot = namedSlots.find(
-          (slot: Element) => getAttribute(slot, 'name') === slotName,
+      if (childSlotName) {
+        const slotForName = namedSlots.find(
+          (slot: Element) => getAttribute(slot, 'name') === childSlotName,
         );
 
-        if (slot) {
-          insertBefore(getParentNode(slot), child, slot);
+        if (slotForName) {
+          insertBefore(
+            getParentNode(slotForName),
+            currentElementChild,
+            slotForName,
+          );
           continue;
         }
       }
 
-      if (primarySlot) {
-        if (isTextNode(child)) {
-          insertTextBefore(primarySlotParent, child.value, primarySlot);
+      if (unnamedSlot) {
+        if (isTextNode(currentElementChild)) {
+          insertTextBefore(
+            unnamedSlotParent,
+            currentElementChild.value,
+            unnamedSlot,
+          );
           continue;
         }
-        insertBefore(primarySlotParent, child, primarySlot);
+        insertBefore(unnamedSlotParent, currentElementChild, unnamedSlot);
       }
     }
 
-    for (const slot of slots) remove(slot);
-    customElement.childNodes = getChildNodes(cloned);
+    for (const slot of replacerSlots) remove(slot);
+    customElement.childNodes = getChildNodes(replacerClone);
   }
 }
 

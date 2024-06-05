@@ -30,6 +30,8 @@ export function replaceElementsContent(
     if (!replacer) continue;
 
     const cloned = cloneNode(replacer.parsed.content);
+    replaceElementsContent(replacers, cloned);
+
     const slots = findElements(cloned, findTag('slot'));
     const elementChildren = getChildNodes(customElement);
 

@@ -1,20 +1,16 @@
-import { findTag, replaceNode } from '../../../util/parse5';
+import { findTag } from '../../../util/parse5';
 import { findCustomElements } from '../../findCustomElements/findCustomElements';
 import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
 import {
   Element,
-  appendChild,
-  createDocumentFragment,
-  findElement,
   findElements,
   getAttribute,
-  getAttributes,
   getChildNodes,
   getParentNode,
   getTagName,
   insertBefore,
+  insertTextBefore,
   isTextNode,
-  remove,
 } from '@web/parse5-utils';
 import { parseFragment, serialize } from 'parse5';
 import { Document, DocumentFragment } from 'parse5/dist/tree-adapters/default';
@@ -34,56 +30,36 @@ export function replaceElementsContent(
     if (!replacer) continue;
 
     const cloned = cloneNode(replacer.parsed.content);
-    // const isTemplate = findElement(cloned, (el) => {
-    //   return (
-    //     el.nodeName === 'template' &&
-    //     getAttribute(el, 'shadowrootmode') === 'open'
-    //   );
-    // });
-
-    replaceElementsContent(replacers, cloned);
-
-    // TODO: Handle multiple slots
     const slots = findElements(cloned, findTag('slot'));
     const elementChildren = getChildNodes(customElement);
 
-    for (const slot of slots) {
-      const parentNode = getParentNode(slot);
-      const slotName = getAttribute(slot, 'name');
+    const namedSlots = slots.filter((slot) => getAttribute(slot, 'name'));
+    const primarySlot = slots.find((slot) => !getAttribute(slot, 'name'));
+    const primarySlotParent = primarySlot && getParentNode(primarySlot);
+
+    for (const child of elementChildren) {
+      const slotName = getAttribute(child, 'slot');
       if (slotName) {
-        const children = elementChildren.filter((child: Element) => {
-          return slotName === getAttribute(child, 'slot');
-        });
+        const slot = namedSlots.find(
+          (slot) => slotName === getAttribute(slot, 'name'),
+        );
 
-        const fragment = createDocumentFragment();
-        for (const s of children) {
-          appendChild(fragment, s);
+        if (slot) {
+          insertBefore(getParentNode(slot), child, slot);
+          continue;
         }
-
-        replaceNode(slot, fragment);
-        continue;
       }
 
-      for (const child of elementChildren) {
+      if (primarySlot) {
         if (isTextNode(child)) {
-          const content = child.value;
-          insertBefore(
-            parentNode,
-            {
-              nodeName: '#text',
-              value: content,
-            },
-            slot,
-          );
-          remove(child);
-        } else {
-          replaceNode(slot, child);
+          insertTextBefore(primarySlotParent, child.value, primarySlot);
+          continue;
         }
+        insertBefore(primarySlotParent, child, primarySlot);
       }
     }
-    for (const child of getChildNodes(cloned)) {
-      appendChild(customElement, child);
-    }
+
+    customElement.childNodes = getChildNodes(cloned);
   }
 }
 

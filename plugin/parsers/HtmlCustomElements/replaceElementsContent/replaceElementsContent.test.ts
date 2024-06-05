@@ -227,4 +227,43 @@ describe('replaceElementsContent', () => {
 
     expect(findElement(templateContent, findTag('p'))).toBeNull();
   });
+
+  it('slots of cihldren in shadow', () => {
+    const cb = parseFragment(`<button><slot></slot></button>`);
+    const ce = parseFragment(
+      `<template shadowrootmode="open"><x-button>hello</x-button><slot></slot></template>`,
+    );
+    const replacers = [
+      {
+        path: '',
+        tagName: 'x-tag',
+        parsed: {
+          styleTags: [],
+          scriptTags: [],
+          content: ce,
+        },
+      },
+      {
+        path: '',
+        tagName: 'x-button',
+        parsed: {
+          styleTags: [],
+          scriptTags: [],
+          content: cb,
+        },
+      },
+    ];
+
+    const fragment = createDocumentFragment();
+    const element = createElement('x-tag');
+    const paragraph = createElement('span');
+    appendChild(element, paragraph);
+    appendChild(fragment, element);
+    replaceElementsContent(replacers, fragment);
+
+    const template = findElement(element, findTag('template'));
+    const templateContent = getTemplateContent(template);
+
+    expect(findElement(templateContent, findTag('span'))).toBeNull();
+  });
 });

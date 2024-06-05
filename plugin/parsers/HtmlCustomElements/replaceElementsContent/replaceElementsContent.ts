@@ -3,14 +3,13 @@ import { findCustomElements } from '../../findCustomElements/findCustomElements'
 import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
 import {
   Element,
+  appendChild,
   findElement,
   findElements,
   getAttribute,
-  getAttributes,
   getChildNodes,
   getParentNode,
   getTagName,
-  getTemplateContent,
   insertBefore,
   insertTextBefore,
   isTextNode,
@@ -26,58 +25,91 @@ export function replaceElementsContent(
   const customElements = findCustomElements(root);
 
   for (const customElement of customElements) {
-    const tag = getTagName(customElement);
-    const replacer = replacers.find((replacer) => {
-      return replacer.tagName === tag;
-    });
+    const replacer = replacers.find(
+      (replacer) => getTagName(customElement) === replacer.tagName,
+    );
 
-    if (!replacer) continue;
+    if (replacer === undefined) {
+      continue;
+    }
 
-    const cloned = cloneNode(replacer.parsed.content);
-    replaceElementsContent(replacers, cloned);
+    const replacerContent = replacer.parsed.content;
+    const replacerClone = cloneNode(replacerContent);
+    replaceElementsContent(replacers, replacerClone);
 
-    const isShadow = findElement(replacer.parsed.content, (el) => {
-      return (
+    const replacerSlots = findElements(replacerClone, findTag('slot'));
+    const [namedSlots, unnamedSlots] = getSlotTypes(replacerSlots);
+
+    const unnamedSlot = unnamedSlots[0];
+    const unnamedSlotParent = unnamedSlot
+      ? getParentNode(unnamedSlot)
+      : undefined;
+
+    const shadowTemplate = findElement(
+      replacerContent,
+      (el) =>
         el.tagName === 'template' &&
-        getAttribute(el, 'shadowrootmode') === 'open'
-      );
-    });
+        getAttribute(el, 'shadowrootmode') === 'open',
+    );
 
-    const slots = findElements(cloned, findTag('slot'));
-    const elementChildren = getChildNodes(customElement);
+    if (shadowTemplate !== null) {
+      for (const child of getChildNodes(replacerClone)) {
+        appendChild(customElement, child);
+      }
+      continue;
+    }
 
-    const namedSlots = slots.filter((slot) => getAttribute(slot, 'name'));
-    const primarySlot = slots.find((slot) => !getAttribute(slot, 'name'));
-    const primarySlotParent = primarySlot && getParentNode(primarySlot);
+    const currentElementChildren = getChildNodes(customElement);
+    for (const currentElementChild of currentElementChildren) {
+      const childSlotName = getAttribute(currentElementChild, 'slot');
 
-    for (const child of elementChildren) {
-      if (!isShadow) {
-        const slotName = getAttribute(child, 'slot');
-        if (slotName) {
-          const slot = namedSlots.find(
-            (slot) => slotName === getAttribute(slot, 'name'),
+      if (childSlotName) {
+        const slotForName = namedSlots.find(
+          (slot: Element) => getAttribute(slot, 'name') === childSlotName,
+        );
+
+        if (slotForName) {
+          insertBefore(
+            getParentNode(slotForName),
+            currentElementChild,
+            slotForName,
           );
-
-          if (slot) {
-            insertBefore(getParentNode(slot), child, slot);
-            continue;
-          }
+          continue;
         }
+      }
 
-        if (primarySlot) {
-          if (isTextNode(child)) {
-            insertTextBefore(primarySlotParent, child.value, primarySlot);
-            continue;
-          }
-          insertBefore(primarySlotParent, child, primarySlot);
+      if (unnamedSlot) {
+        if (isTextNode(currentElementChild)) {
+          insertTextBefore(
+            unnamedSlotParent,
+            currentElementChild.value,
+            unnamedSlot,
+          );
+          continue;
         }
+        insertBefore(unnamedSlotParent, currentElementChild, unnamedSlot);
       }
     }
 
-    customElement.childNodes = getChildNodes(cloned);
+    for (const slot of replacerSlots) remove(slot);
+    customElement.childNodes = getChildNodes(replacerClone);
   }
 }
 
 function cloneNode(fragment: DocumentFragment) {
   return parseFragment(serialize(fragment));
+}
+
+function getSlotTypes(slots: Element): [Element, Element] {
+  const named = [];
+  const unnamed = [];
+
+  for (const slot of slots) {
+    if (getAttribute(slot, 'name')) {
+      named.push(slot);
+      continue;
+    }
+    unnamed.push(slot);
+  }
+  return [named, unnamed];
 }

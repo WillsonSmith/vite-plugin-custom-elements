@@ -5,13 +5,13 @@ import { defineConfig } from 'vite';
 import { pluginCustomElement } from './plugin/plugin-custom-element';
 
 const inputs = [
-  'index.html',
   ...(await glob('src/**/*.html', { ignore: 'src/components/**' })),
 ].map((input) => [input, input]);
 
 export default defineConfig({
   root: 'src',
   build: {
+    outDir: '../dist',
     rollupOptions: {
       input: Object.fromEntries(inputs),
     },

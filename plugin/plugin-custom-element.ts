@@ -34,37 +34,40 @@ export function pluginCustomElement({
 }: PluginCustomElementOptions) {
   return {
     name: 'plugin-custom-element',
-    transformIndexHtml: async (content: string) => {
-      const document = parse(content);
-      const body = findElement(document, findTag('body'));
+    transformIndexHtml: {
+      order: 'pre',
+      handler: async (content: string) => {
+        const document = parse(content);
+        const body = findElement(document, findTag('body'));
 
-      const projectDir = path.join(cwd, root);
-      const customElements: Element[] = findCustomElements(document);
-      const customElementSourceFiles = await findHtmlElementFiles(
-        path.join(projectDir, elementDir),
-      );
+        const projectDir = path.join(cwd, root);
+        const customElements: Element[] = findCustomElements(document);
+        const customElementSourceFiles = await findHtmlElementFiles(
+          path.join(projectDir, elementDir),
+        );
 
-      const parsedElements = await parseRequiredHtmlElements(
-        customElements,
-        customElementSourceFiles,
-      );
+        const parsedElements = await parseRequiredHtmlElements(
+          customElements,
+          customElementSourceFiles,
+        );
 
-      processShadowedItems(projectDir, parsedElements);
-      replaceElementsContent(parsedElements, document);
+        processShadowedItems(projectDir, parsedElements);
+        replaceElementsContent(parsedElements, document);
 
-      injectStyles(parsedElements, document);
-      injectScripts(projectDir, parsedElements, document);
+        injectStyles(parsedElements, document);
+        injectScripts(projectDir, parsedElements, document);
 
-      const hydrateScripts = await generateHydrationScripts(
-        projectDir,
-        customElements,
-      );
+        const hydrateScripts = await generateHydrationScripts(
+          projectDir,
+          customElements,
+        );
 
-      for (const script of hydrateScripts) {
-        appendChild(body, script);
-      }
+        for (const script of hydrateScripts) {
+          appendChild(body, script);
+        }
 
-      return serialize(document);
+        return serialize(document);
+      },
     },
   };
 }

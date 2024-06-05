@@ -2,6 +2,11 @@
   :host {
     display: block;
   }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
   nav {
     display: flex;
     gap: 0.5rem;
@@ -11,17 +16,28 @@
     border-bottom: 1px solid lightgrey;
 
     a {
-      background: purple;
+      color: var(--sl-color-neutral-1000);
+      font-size: 1.1rem;
+      font-weight: var(--sl-font-weight-semibold);
+      text-decoration: none;
+      padding: 0.3rem 0.6rem;
+      border: 1px solid var(--sl-color-neutral-1000);
+      border-radius: 3px;
     }
   }
 </style>
 
-<x-nav-title></x-nav-title>
-<nav>
-  <a href="/">Home</a>
-  <a href="/about">About</a>
-  <a href="/blog">Blog</a>
-</nav>
+<div class="x-nav">
+  <div>
+    <slot name="title"></slot>
+  </div>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/blog">Blog</a>
+    <slot name="additional-links"></slot>
+  </nav>
+</div>
 
 <script type="module">
   console.log('test');

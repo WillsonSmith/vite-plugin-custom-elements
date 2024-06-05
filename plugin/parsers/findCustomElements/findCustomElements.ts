@@ -1,9 +1,9 @@
-import { Node, findElements, getTagName } from '@web/parse5-utils';
+import { Element, Node, findElements, getTagName } from '@web/parse5-utils';
 
 /** Parse a document and find all custom elements
  * @param node - A parse5 node (Document) to search
  */
-export function findCustomElements(node: Node) {
+export function findCustomElements(node: Node): Element[] {
   return findElements(node, (element) => {
     if (node !== element) {
       return isCustomElement(getTagName(element));

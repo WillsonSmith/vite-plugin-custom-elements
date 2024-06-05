@@ -30,13 +30,14 @@ export class LiveClock extends HTMLElement {
   }
 
   setTime() {
-    this.container
-      ? (this.container.innerHTML = new Intl.DateTimeFormat('en-CA', {
-          hour: 'numeric',
-          minute: 'numeric',
-          second: undefined,
-        }).format(new Date()))
-      : undefined;
+    const time = new Intl.DateTimeFormat('en-CA', {
+      hour: 'numeric',
+      minute: 'numeric',
+    }).format(new Date());
+
+    if (this.container) {
+      this.container.innerHTML = time;
+    }
   }
 }
 

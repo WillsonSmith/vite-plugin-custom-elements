@@ -2,29 +2,26 @@
   :host {
     --border: 1px solid var(--sl-color-neutral-1000);
     display: block;
-    border-block-start: var(--border);
-    border-block-end: var(--border);
-
-    padding-inline: var(--sl-spacing-large);
-    padding-block: var(--sl-spacing-medium);
-  }
-
-  .content-block {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
   }
 
   header {
-    margin-bottom: var(--sl-spacing-small);
+    margin-bottom: var(--sl-spacing-x-small);
+    &:not(:empty) {
+      padding-block-end: var(--sl-spacing-3x-small);
+      border-bottom: var(--border);
+    }
   }
-  section {
-    width: minmax(100%, 100ch);
+
+  .content-block__content {
+    display: inline-block;
+    border: var(--border);
+    padding-block: var(--sl-spacing-small);
+    padding-inline: var(--sl-spacing-large);
   }
 </style>
 
 <div class="content-block">
-  <section>
+  <section class="content-block__content">
     <header>
       <slot name="title"></slot>
     </header>

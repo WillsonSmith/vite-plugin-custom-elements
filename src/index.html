@@ -9,25 +9,6 @@
       href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/light.css"
     />
     <link rel="stylesheet" href="./styles/main.css" />
-    <style>
-      page-header {
-        display: block;
-        padding-block: var(--sl-spacing-small);
-        padding-inline: var(--sl-spacing-medium);
-      }
-      .title {
-        font-size: var(--sl-font-size-large);
-        font-weight: var(--sl-font-weight-bold);
-        letter-spacing: var(--sl-letter-spacing-denser);
-        font-family: var(--sl-font-mono);
-      }
-
-      h2 {
-        font-size: var(--sl-font-size-x-large);
-        font-weight: var(--sl-font-weight-semibold);
-        line-height: var(--sl-line-height-denser);
-      }
-    </style>
   </head>
   <body>
     <page-header>
@@ -37,10 +18,14 @@
     <main>
       <div class="content">
         <content-block>
-          <h2 slot="title">What dis?</h2>
+          <h2 class="description-header" slot="title">
+            An old way to build websites
+          </h2>
           <p>
-            <code>plugin-custom-element</code> is a vite plugin for building
-            websites plus a little more.
+            <code>plugin-custom-element</code> is built with a simple
+            philosophy: Use the platform. This content expands for as long as it
+            can go because this is a long paragraph and I wnat to see it at a
+            very long length.
           </p>
         </content-block>
       </div>

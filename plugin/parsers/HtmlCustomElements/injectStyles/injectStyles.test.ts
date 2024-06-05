@@ -36,6 +36,21 @@ describe('injectStyles', () => {
     expect(styles.length).toBe(1);
   });
 
+  it('Injects styles into shadowroots', async () => {
+    const document = parse(DOCUMENT_TEMPLATE);
+    const component = createElement('x-component');
+    appendChild(document, component);
+    const elements = createParsedElements(
+      createStyle('.my-selector { color: black; }'),
+      `<template shadowrootmode="open"><p>Hello</p></template>`,
+    );
+
+    await injectStyles(elements, document);
+    const head = findElement(document, findTag('head'));
+    const styles = findElements(head, findTag('style'));
+    expect(styles.length).toBe(1);
+  });
+
   it('Prefixes selectors', async () => {
     const document = parse(DOCUMENT_TEMPLATE);
     const component = createElement('x-component');

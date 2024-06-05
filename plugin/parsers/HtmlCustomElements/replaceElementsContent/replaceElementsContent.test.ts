@@ -10,6 +10,7 @@ import {
   getAttribute,
   getChildNodes,
   getParentNode,
+  getTemplateContent,
 } from '@web/parse5-utils';
 import { parseFragment } from 'parse5';
 import { describe, expect, it } from 'vitest';
@@ -196,5 +197,34 @@ describe('replaceElementsContent', () => {
     const slottedParagraphs = withSlotted.filter((s) => s.nodeName === 'p');
 
     expect(slottedParagraphs.length).toBe(10);
+  });
+
+  it('Does not fill slots for shadowroot elements', () => {
+    const ce = parseFragment(
+      `<template shadowrootmode="open"><slot></slot></template>`,
+    );
+    const replacers = [
+      {
+        path: '',
+        tagName: 'x-tag',
+        parsed: {
+          styleTags: [],
+          scriptTags: [],
+          content: ce,
+        },
+      },
+    ];
+
+    const fragment = createDocumentFragment();
+    const element = createElement('x-tag');
+    const paragraph = createElement('p');
+    appendChild(element, paragraph);
+    appendChild(fragment, element);
+    replaceElementsContent(replacers, fragment);
+
+    const template = findElement(element, findTag('template'));
+    const templateContent = getTemplateContent(template);
+
+    expect(findElement(templateContent, findTag('p'))).toBeNull();
   });
 });

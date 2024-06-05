@@ -4,7 +4,9 @@ import {
   appendChild,
   createElement,
   findElement,
+  findElements,
   getChildNodes,
+  getTemplateContent,
 } from '@web/parse5-utils';
 import { Document } from 'parse5/dist/tree-adapters/default';
 import postcss, { Rule } from 'postcss';
@@ -43,7 +45,17 @@ export async function injectStyles(
     },
   ];
 
-  appendChild(findElement(root, findTag('head')), styleTag);
+  const templates = findElements(root, (el) => {
+    return el.nodeName === 'template';
+  });
+
+  for (const template of templates) {
+    injectStyles(elements, getTemplateContent(template));
+  }
+
+  const appendTo = findElement(root, findTag('head')) || root;
+
+  appendChild(appendTo, styleTag);
 }
 
 type TransformOptions = [string, string, string, string, Rule];

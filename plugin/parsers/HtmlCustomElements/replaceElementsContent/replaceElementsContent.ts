@@ -50,8 +50,8 @@ export function replaceElementsContent(
     const primarySlot = slots.find((slot) => !getAttribute(slot, 'name'));
     const primarySlotParent = primarySlot && getParentNode(primarySlot);
 
-    for (const child of elementChildren) {
-      if (!isShadow) {
+    if (!isShadow) {
+      for (const child of elementChildren) {
         const slotName = getAttribute(child, 'slot');
         if (slotName) {
           const slot = namedSlots.find(
@@ -71,6 +71,9 @@ export function replaceElementsContent(
           }
           insertBefore(primarySlotParent, child, primarySlot);
         }
+      }
+      for (const slot of slots) {
+        remove(slot);
       }
     }
 

@@ -7,11 +7,9 @@ import {
   findElement,
   findElements,
   getAttribute,
-  getAttributes,
   getChildNodes,
   getParentNode,
   getTagName,
-  getTemplateContent,
   insertBefore,
   insertTextBefore,
   isTextNode,
@@ -47,9 +45,12 @@ export function replaceElementsContent(
     const slots = findElements(cloned, findTag('slot'));
     const elementChildren = getChildNodes(customElement);
 
-    const namedSlots = slots.filter((slot) => getAttribute(slot, 'name'));
-    const primarySlot = slots.find((slot) => !getAttribute(slot, 'name'));
-    const primarySlotParent = primarySlot && getParentNode(primarySlot);
+    const [namedSlots, unnamedSlots] = getSlotTypes(slots);
+
+    const primarySlot = unnamedSlots[0];
+    const primarySlotParent = primarySlot
+      ? getParentNode(primarySlot)
+      : undefined;
 
     if (isShadow) {
       for (const child of getChildNodes(cloned)) {
@@ -60,9 +61,10 @@ export function replaceElementsContent(
 
     for (const child of elementChildren) {
       const slotName = getAttribute(child, 'slot');
+
       if (slotName) {
         const slot = namedSlots.find(
-          (slot) => slotName === getAttribute(slot, 'name'),
+          (slot: Element) => getAttribute(slot, 'name') === slotName,
         );
 
         if (slot) {
@@ -79,13 +81,26 @@ export function replaceElementsContent(
         insertBefore(primarySlotParent, child, primarySlot);
       }
     }
-    for (const slot of slots) {
-      remove(slot);
-    }
+
+    for (const slot of slots) remove(slot);
     customElement.childNodes = getChildNodes(cloned);
   }
 }
 
 function cloneNode(fragment: DocumentFragment) {
   return parseFragment(serialize(fragment));
+}
+
+function getSlotTypes(slots: Element): [Element, Element] {
+  const named = [];
+  const unnamed = [];
+
+  for (const slot of slots) {
+    if (getAttribute(slot, 'name')) {
+      named.push(slot);
+      continue;
+    }
+    unnamed.push(slot);
+  }
+  return [named, unnamed];
 }

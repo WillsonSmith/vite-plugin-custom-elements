@@ -1,0 +1,12 @@
+:host {
+  display: block;
+}
+.page-header {
+  display: flex;
+  gap: var(--sl-spacing-medium);
+
+  align-items: center;
+  justify-content: space-between;
+
+  border-bottom: 1px solid var(--sl-color-neutral-1000);
+}

@@ -24,6 +24,7 @@ describe('injectScripts', () => {
         parsed: {
           scriptTags: [createScript({ type: 'module' }, `console.log('TEST')`)],
           styleTags: [],
+          linkTags: [],
           content: createElement('div'),
         },
       },

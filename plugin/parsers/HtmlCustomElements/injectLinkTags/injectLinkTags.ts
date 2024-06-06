@@ -59,12 +59,14 @@ export async function transformLinkUrls(
 
     if (shadowTemplate) {
       if (currentHref) {
-        setAttribute(tag, 'href', path.join(relativePath, currentHref));
+        const np = path.join(relativePath, currentHref);
+        console.log(np);
+        setAttribute(tag, 'href', np);
       }
     }
   }
 }
 
 function normalizePath(pathStr: string, rootDir: string) {
-  return path.join('./', path.dirname(pathStr).split(rootDir)[1]);
+  return path.join('/', path.dirname(pathStr).split(rootDir)[1]);
 }

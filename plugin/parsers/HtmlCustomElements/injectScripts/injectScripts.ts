@@ -42,7 +42,7 @@ export function transformShadowScripts(
 }
 
 function normalizePath(pathStr: string, rootDir: string) {
-  return path.join('./', path.dirname(pathStr).split(rootDir)[1]);
+  return path.join('/', path.dirname(pathStr).split(rootDir)[1]);
 }
 
 export function injectScripts(

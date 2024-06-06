@@ -1,9 +1,24 @@
 import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
-import { getAttribute, setAttribute } from '@web/parse5-utils';
+import {
+  findElement,
+  getAttribute,
+  getTagName,
+  setAttribute,
+} from '@web/parse5-utils';
 import path from 'node:path';
 
 export function transformLinkUrls(rootDir: string, element: RequiredElement) {
+  const content = element.parsed.content;
   const linkTags = element.parsed.linkTags;
+
+  const shadowTemplate = findElement(content, (el) => {
+    return (
+      getTagName(el) === 'template' &&
+      getAttribute(el, 'shadowrootmode') === 'open'
+    );
+  });
+
+  console.log(shadowTemplate);
 
   for (const tag of linkTags) {
     const relativePath = normalizePath(element.path, rootDir);

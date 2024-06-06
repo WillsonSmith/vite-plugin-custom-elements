@@ -44,14 +44,14 @@ describe('parseHtmlElement', () => {
     expect(parseHtmlElement(fragment).linkTags.length).toBe(2);
   });
 
-  it('Does NOT extract <link> tags when in shadowroot', async () => {
+  it('Extracts <link> tags when in shadowroot', async () => {
     const fixture = readFile(
       join(fixtureDir, 'shady-element-scripts.html'),
       'utf8',
     );
     const fragment = parseFragment(await fixture);
     const parsed = parseHtmlElement(fragment);
-    expect(parsed.linkTags.length).toBe(0);
+    expect(parsed.linkTags.length).toBe(1);
   });
 
   it('Extracts <script> tags', async () => {

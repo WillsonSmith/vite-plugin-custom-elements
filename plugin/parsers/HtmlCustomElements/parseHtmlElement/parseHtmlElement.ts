@@ -2,6 +2,7 @@ import {
   findElement,
   findElements,
   getAttribute,
+  getAttributes,
   getTagName,
   getTemplateContent,
   remove,
@@ -34,7 +35,7 @@ export function parseHtmlElement(
 function extractParts(fragment: DocumentFragment): ParsedHtmlElement {
   const shadowTemplate = findShadowTemplate(fragment);
 
-  const linkTags = findLinks(fragment, shadowTemplate);
+  const linkTags = findLinks(fragment);
   const styleTags = findStyles(fragment, shadowTemplate);
   const scriptTags = findScripts(fragment, shadowTemplate);
 
@@ -71,8 +72,12 @@ function findNonShaded(
   });
 }
 
-function findLinks(fragment: DocumentFragment, shadowTemplate: Element) {
-  return findNonShaded(fragment, shadowTemplate, 'link');
+function findLinks(fragment: DocumentFragment) {
+  const links = findElements(fragment, (el) => {
+    return getTagName(el) === 'link';
+  });
+
+  return links;
 }
 
 function findStyles(fragment: DocumentFragment, shadowTemplate: Element) {

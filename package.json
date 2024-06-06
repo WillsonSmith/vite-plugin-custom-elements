@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --host",
+    "build": "vite build",
     "test": "vitest",
     "manifest": "cem analyze"
   },

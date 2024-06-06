@@ -6,6 +6,7 @@ import {
 } from '@web/parse5-utils';
 import path from 'node:path';
 import { parse, serialize } from 'parse5';
+import type { PluginOption } from 'vite';
 
 import { generateHydrationScripts } from './hydration/generateHydrationScripts/generateHydrationScripts';
 import { findCustomElements } from './parsers';
@@ -34,39 +35,42 @@ export function pluginCustomElement({
 }: PluginCustomElementOptions) {
   return {
     name: 'plugin-custom-element',
-    transformIndexHtml: async (content: string) => {
-      const document = parse(content);
-      const body = findElement(document, findTag('body'));
+    transformIndexHtml: {
+      order: 'pre',
+      handler: async (content: string) => {
+        const document = parse(content);
+        const body = findElement(document, findTag('body'));
 
-      const projectDir = path.join(cwd, root);
-      const customElements: Element[] = findCustomElements(document);
-      const customElementSourceFiles = await findHtmlElementFiles(
-        path.join(projectDir, elementDir),
-      );
+        const projectDir = path.join(cwd, root);
+        const customElements: Element[] = findCustomElements(document);
+        const customElementSourceFiles = await findHtmlElementFiles(
+          path.join(projectDir, elementDir),
+        );
 
-      const parsedElements = await parseRequiredHtmlElements(
-        customElements,
-        customElementSourceFiles,
-      );
+        const parsedElements = await parseRequiredHtmlElements(
+          customElements,
+          customElementSourceFiles,
+        );
 
-      processShadowedItems(projectDir, parsedElements);
-      replaceElementsContent(parsedElements, document);
+        processShadowedItems(projectDir, parsedElements);
+        replaceElementsContent(parsedElements, document);
 
-      injectStyles(parsedElements, document);
-      injectScripts(projectDir, parsedElements, document);
+        injectStyles(parsedElements, document);
+        injectScripts(projectDir, parsedElements, document);
 
-      const hydrateScripts = await generateHydrationScripts(
-        projectDir,
-        customElements,
-      );
+        const hydrateScripts = await generateHydrationScripts(
+          projectDir,
+          customElements,
+        );
 
-      for (const script of hydrateScripts) {
-        appendChild(body, script);
-      }
+        for (const script of hydrateScripts) {
+          appendChild(body, script);
+        }
 
-      return serialize(document);
+        return serialize(document);
+      },
     },
-  };
+  } as PluginOption;
 }
 
 function processShadowedItems(rootDir: string, elements: RequiredElement[]) {

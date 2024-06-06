@@ -1,0 +1,30 @@
+<style>
+  :host {
+    --border: 1px solid var(--sl-color-neutral-1000);
+    display: block;
+  }
+
+  header {
+    margin-bottom: var(--sl-spacing-x-small);
+    &:not(:empty) {
+      padding-block-end: var(--sl-spacing-3x-small);
+      border-bottom: var(--border);
+    }
+  }
+
+  .content-block__content {
+    display: inline-block;
+    border: var(--border);
+    padding-block: var(--sl-spacing-small);
+    padding-inline: var(--sl-spacing-large);
+  }
+</style>
+
+<div class="content-block">
+  <section class="content-block__content">
+    <header>
+      <slot name="title"></slot>
+    </header>
+    <slot></slot>
+  </section>
+</div>

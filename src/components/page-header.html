@@ -1,0 +1,19 @@
+<style>
+  :host {
+    display: block;
+  }
+  .page-header {
+    display: flex;
+    gap: var(--sl-spacing-medium);
+
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 1px solid var(--sl-color-neutral-1000);
+  }
+</style>
+
+<div class="page-header">
+  <div><slot name="title"></slot></div>
+  <div><slot></slot></div>
+</div>

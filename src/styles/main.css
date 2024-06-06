@@ -1,0 +1,58 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  margin: 0;
+}
+
+code {
+  font-family: var(--sl-font-mono);
+}
+
+body {
+  font-family: var(--sl-font-sans);
+}
+
+body {
+  background: var(--sl-color-neutral-50);
+  color: var(--sl-color-neutral-950);
+}
+
+page-header {
+  background: var(--sl-color-neutral-50);
+  position: sticky;
+  top: 0;
+  display: block;
+  padding-block: var(--sl-spacing-small);
+  padding-inline: var(--sl-spacing-medium);
+}
+
+.title {
+  font-size: var(--sl-font-size-large);
+  font-weight: var(--sl-font-weight-bold);
+  letter-spacing: var(--sl-letter-spacing-denser);
+  font-family: var(--sl-font-mono);
+}
+
+.description-header {
+  font-size: var(--sl-font-size-large);
+  font-weight: var(--sl-font-weight-bold);
+  line-height: var(--sl-line-height-dense);
+}
+
+.content {
+  padding-inline: var(--sl-spacing-medium);
+}
+
+content-block p {
+  max-width: 60ch;
+  font-size: var(--sl-font-size-medium);
+  line-height: var(--sl-line-height-normal);
+
+}

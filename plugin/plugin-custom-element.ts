@@ -6,6 +6,7 @@ import {
 } from '@web/parse5-utils';
 import path from 'node:path';
 import { parse, serialize } from 'parse5';
+import type { PluginOption } from 'vite';
 
 import { generateHydrationScripts } from './hydration/generateHydrationScripts/generateHydrationScripts';
 import { findCustomElements } from './parsers';
@@ -69,7 +70,7 @@ export function pluginCustomElement({
         return serialize(document);
       },
     },
-  };
+  } as PluginOption;
 }
 
 function processShadowedItems(rootDir: string, elements: RequiredElement[]) {

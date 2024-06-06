@@ -54,7 +54,7 @@ export function pluginCustomElement({
         );
 
         for (const el of parsedElements) {
-          transformLinkUrls(projectDir, el);
+          await transformLinkUrls(projectDir, el);
         }
 
         processShadowedItems(projectDir, parsedElements);

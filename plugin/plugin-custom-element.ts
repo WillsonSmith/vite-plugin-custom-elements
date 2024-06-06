@@ -11,6 +11,7 @@ import type { PluginOption } from 'vite';
 import { generateHydrationScripts } from './hydration/generateHydrationScripts/generateHydrationScripts';
 import { findCustomElements } from './parsers';
 import { findHtmlElementFiles } from './parsers/HtmlCustomElements/findHtmlElementFiles/findHtmlElementFiles';
+import { transformLinkUrls } from './parsers/HtmlCustomElements/injectLinkTags/injectLinkTags';
 import {
   injectScripts,
   transformShadowScripts,
@@ -51,6 +52,10 @@ export function pluginCustomElement({
           customElements,
           customElementSourceFiles,
         );
+
+        for (const el of parsedElements) {
+          await transformLinkUrls(projectDir, el);
+        }
 
         processShadowedItems(projectDir, parsedElements);
         replaceElementsContent(parsedElements, document);

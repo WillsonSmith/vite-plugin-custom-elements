@@ -7,6 +7,7 @@ import {
   findElements,
   getChildNodes,
   getTemplateContent,
+  isTextNode,
 } from '@web/parse5-utils';
 import { Document } from 'parse5/dist/tree-adapters/default';
 import postcss, { Rule } from 'postcss';
@@ -23,7 +24,7 @@ export async function injectStyles(
     const tags = element.parsed.styleTags;
     for (const tag of tags) {
       const content = getChildNodes(tag)[0];
-      if (content.nodeName === '#text') {
+      if (isTextNode(content)) {
         const scoped = await scopeStyleToElement(
           element.tagName,
           content.value,

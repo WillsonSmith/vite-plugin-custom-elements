@@ -14,6 +14,7 @@ describe('findHtmlElementFiles', () => {
       '/shady-element-styles.html',
       '/shady-element-scripts.html',
       '/shady-element-scripts-external.html',
+      '/shady-element-links.html',
       '/my-element.html',
       '/element-with-nested.html',
     ]);

@@ -1,19 +1,18 @@
-import { findTag } from '../../../util/parse5';
 import {
   findElement,
   findElements,
   getAttribute,
-  getChildNodes,
+  getAttributes,
   getTagName,
   getTemplateContent,
   remove,
 } from '@web/parse5-utils';
-import { serialize } from 'parse5';
 import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
 
 export type ParsedHtmlElement = {
-  styleTags: Element[];
   content: DocumentFragment;
+  linkTags: Element[];
+  styleTags: Element[];
   scriptTags: Element[];
 };
 
@@ -23,19 +22,14 @@ export type ParsedHtmlElement = {
 export function parseHtmlElement(
   fragment: DocumentFragment,
 ): ParsedHtmlElement {
-  const shadowTemplate = findShadowTemplate(fragment);
-
   const extracted = extractParts(fragment);
-  if (shadowTemplate) {
-    console.log('Handle shadowroot element');
-  }
-
   return extracted;
 }
 
-function extractParts(fragment: DocumentFragment) {
+function extractParts(fragment: DocumentFragment): ParsedHtmlElement {
   const shadowTemplate = findShadowTemplate(fragment);
 
+  const linkTags = findLinks(fragment);
   const styleTags = findStyles(fragment, shadowTemplate);
   const scriptTags = findScripts(fragment, shadowTemplate);
 
@@ -46,7 +40,12 @@ function extractParts(fragment: DocumentFragment) {
     remove(script);
   }
 
-  return { styleTags, scriptTags, content: fragment };
+  return {
+    styleTags,
+    scriptTags,
+    linkTags,
+    content: fragment,
+  };
 }
 
 function findNonShaded(
@@ -65,6 +64,14 @@ function findNonShaded(
     }
     return true;
   });
+}
+
+function findLinks(fragment: DocumentFragment) {
+  const links = findElements(fragment, (el) => {
+    return getTagName(el) === 'link';
+  });
+
+  return links;
 }
 
 function findStyles(fragment: DocumentFragment, shadowTemplate: Element) {

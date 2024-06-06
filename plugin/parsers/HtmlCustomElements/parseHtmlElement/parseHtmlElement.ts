@@ -22,13 +22,7 @@ export type ParsedHtmlElement = {
 export function parseHtmlElement(
   fragment: DocumentFragment,
 ): ParsedHtmlElement {
-  const shadowTemplate = findShadowTemplate(fragment);
-
   const extracted = extractParts(fragment);
-  if (shadowTemplate) {
-    console.log('Handle shadowroot element');
-  }
-
   return extracted;
 }
 

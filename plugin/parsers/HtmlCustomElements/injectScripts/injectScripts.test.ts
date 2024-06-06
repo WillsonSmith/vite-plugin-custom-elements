@@ -60,6 +60,7 @@ describe('transformShadowScripts', () => {
       parsed: {
         scriptTags: [],
         styleTags: [],
+        linkTags: [],
         content: createElement('div'),
       },
     };
@@ -94,6 +95,7 @@ describe('transformShadowScripts', () => {
       parsed: {
         scriptTags: [],
         styleTags: [],
+        linkTags: [],
         content: createElement('div'),
       },
     };

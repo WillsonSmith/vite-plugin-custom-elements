@@ -12,7 +12,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 export async function transformLinkUrls(
-  rootDir: string,
+  indexDir: string,
   element: RequiredElement,
 ) {
   const content = element.parsed.content;
@@ -29,7 +29,8 @@ export async function transformLinkUrls(
   const linkContents = new Set<string>();
 
   for (const tag of linkTags) {
-    const relativePath = normalizePath(element.path, rootDir);
+    const relativePath = path.relative(indexDir, path.dirname(element.path));
+
     const currentHref = getAttribute(tag, 'href');
 
     if (getAttribute(tag, 'rel') === 'stylesheet') {
@@ -59,12 +60,13 @@ export async function transformLinkUrls(
 
     if (shadowTemplate) {
       if (currentHref) {
-        setAttribute(tag, 'href', path.join(relativePath, currentHref));
+        const np = path.join(relativePath, currentHref);
+        setAttribute(tag, 'href', np);
       }
     }
   }
 }
 
 function normalizePath(pathStr: string, rootDir: string) {
-  return path.join('./', path.dirname(pathStr).split(rootDir)[1]);
+  return path.join('/', path.dirname(pathStr).split(rootDir)[1]);
 }

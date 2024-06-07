@@ -51,7 +51,14 @@ export async function injectStyles(
   });
 
   for (const template of templates) {
-    injectStyles(elements, getTemplateContent(template));
+    const templateElements = elements.filter((element) => {
+      return (
+        findElements(template, (el) => {
+          return el.nodeName === element.tagName;
+        }).length > 0
+      );
+    });
+    await injectStyles(templateElements, getTemplateContent(template));
   }
 
   const appendTo = findElement(root, findTag('head')) || root;

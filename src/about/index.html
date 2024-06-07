@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>plugin-custom-element</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/light.css"
+    />
+    <link rel="stylesheet" href="/styles/main.css" />
+  </head>
+  <body>
+    <page-header>
+      <h1 class="title" slot="title">Plugin Custom Element</h1>
+      <live-clock hydrate></live-clock>
+    </page-header>
+    <main>
+      <div class="content">
+        <content-block>
+          <h2 class="description-header" slot="title">
+            An old way to build websites
+          </h2>
+          <p>
+            <code>plugin-custom-element</code> is built with a simple
+            philosophy: Use the platform. This content expands for as long as it
+            can go because this is a long paragraph and I wnat to see it at a
+            very long length.
+          </p>
+        </content-block>
+        <shady-box></shady-box>
+      </div>
+    </main>
+  </body>
+</html>

@@ -6,7 +6,7 @@ import {
   findElements,
   getChildNodes,
 } from '@web/parse5-utils';
-import { parse, parseFragment } from 'parse5';
+import { parse, parseFragment, serialize } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
 import { injectStyles } from './injectStyles';
@@ -26,9 +26,9 @@ describe('injectStyles', () => {
     const component = createElement('x-component');
     appendChild(document, component);
 
-    const elements = createParsedElements(
-      createStyle('.my-selector { color: black; }'),
-    );
+    const elements = createParsedElements({
+      styleTag: createStyle('.my-selector { color: black; }'),
+    });
 
     await injectStyles(elements, document);
     const head = findElement(document, findTag('head'));
@@ -40,10 +40,10 @@ describe('injectStyles', () => {
     const document = parse(DOCUMENT_TEMPLATE);
     const component = createElement('x-component');
     appendChild(document, component);
-    const elements = createParsedElements(
-      createStyle('.my-selector { color: black; }'),
-      `<template shadowrootmode="open"><p>Hello</p></template>`,
-    );
+    const elements = createParsedElements({
+      styleTag: createStyle('.my-selector { color: black; }'),
+      content: `<template shadowrootmode="open"><p>Hello</p></template>`,
+    });
 
     await injectStyles(elements, document);
     const head = findElement(document, findTag('head'));
@@ -51,14 +51,59 @@ describe('injectStyles', () => {
     expect(styles.length).toBe(1);
   });
 
+  it('ONLY injects NESTED ELEMENT styles into shadowroots', async () => {
+    const document = parse(DOCUMENT_TEMPLATE);
+    const externalComponent = createElement('x-componenet-external');
+
+    const component2 = createElement('x-component-2');
+    appendChild(
+      component2,
+      parseFragment(`
+      <template shadowrootmode="open">
+        <x-component></x-component>
+        <p>test</p>
+      </template>
+    `),
+    );
+
+    const elements = [
+      ...createParsedElements({
+        tagName: 'x-component-external',
+        styleTag: createStyle(`.external-style { color: red }`),
+      }),
+      ...createParsedElements({
+        tagName: 'x-component',
+        styleTag: createStyle(`.my-selector { color: red }`),
+      }),
+      ...createParsedElements({
+        tagName: 'x-component-2',
+        content: `<template shadowrootmode="open"><x-component></x-component><p>Hello</p></template>`,
+      }),
+    ];
+
+    const body = findElement(document, findTag('body'));
+
+    appendChild(body, externalComponent);
+    appendChild(body, component2);
+
+    await injectStyles(elements, document);
+    const styles = findElements(component2, (el) => {
+      return el.nodeName === 'style';
+    });
+
+    expect(styles.length).toBe(1);
+    const styleText = getChildNodes(styles[0])[0].value;
+    expect(styleText).not.toContain('external-style');
+  });
+
   it('Prefixes selectors', async () => {
     const document = parse(DOCUMENT_TEMPLATE);
     const component = createElement('x-component');
     appendChild(document, component);
 
-    const elements = createParsedElements(
-      createStyle('.my-selector { color: black; }'),
-    );
+    const elements = createParsedElements({
+      styleTag: createStyle('.my-selector { color: black; }'),
+    });
     await injectStyles(elements, document);
 
     const head = findElement(document, findTag('head'));
@@ -73,9 +118,9 @@ describe('injectStyles', () => {
     const component = createElement('x-component');
     appendChild(document, component);
 
-    const elements = createParsedElements(
-      createStyle('.my-selector { a { color: black; } }'),
-    );
+    const elements = createParsedElements({
+      styleTag: createStyle('.my-selector { a { color: black; } }'),
+    });
     await injectStyles(elements, document);
 
     const head = findElement(document, findTag('head'));
@@ -99,14 +144,23 @@ function createStyle(content: string) {
   return style;
 }
 
-function createParsedElements(styleTag: Element, content?: string) {
+function createParsedElements({
+  styleTag,
+  content,
+  tagName = 'x-component',
+}: {
+  styleTag?: Element;
+  content?: string;
+  tagName?: string;
+}) {
   return [
     {
       path: '',
-      tagName: 'x-component',
+      tagName: tagName,
       parsed: {
-        styleTags: [styleTag],
+        styleTags: styleTag ? [styleTag] : [],
         scriptTags: [],
+        linkTags: [],
         content: parseFragment(
           content || '<div class="my-selector">hello</div>',
         ),

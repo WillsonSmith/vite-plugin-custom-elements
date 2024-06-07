@@ -38,11 +38,15 @@ export function pluginCustomElement({
     name: 'plugin-custom-element',
     transformIndexHtml: {
       order: 'pre',
-      handler: async (content: string) => {
+      handler: async (content: string, { path: indexPath }) => {
         const document = parse(content);
         const body = findElement(document, findTag('body'));
 
         const projectDir = path.join(cwd, root);
+        const indexDir = path.join(cwd, root, path.dirname(indexPath));
+
+        // console.log(indexDir);
+
         const customElements: Element[] = findCustomElements(document);
         const customElementSourceFiles = await findHtmlElementFiles(
           path.join(projectDir, elementDir),
@@ -54,17 +58,18 @@ export function pluginCustomElement({
         );
 
         for (const el of parsedElements) {
-          await transformLinkUrls(projectDir, el);
+          await transformLinkUrls(indexDir, el);
         }
 
-        processShadowedItems(projectDir, parsedElements);
+        processShadowedItems(indexDir, parsedElements);
         replaceElementsContent(parsedElements, document);
 
         injectStyles(parsedElements, document);
-        injectScripts(projectDir, parsedElements, document);
+        injectScripts(indexDir, parsedElements, document);
 
         const hydrateScripts = await generateHydrationScripts(
           projectDir,
+          indexDir,
           customElements,
         );
 

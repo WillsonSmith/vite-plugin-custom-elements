@@ -46,7 +46,7 @@ describe('parseHtmlElement', () => {
 
   it('Extracts <link> tags when in shadowroot', async () => {
     const fixture = readFile(
-      join(fixtureDir, 'shady-element-scripts.html'),
+      join(fixtureDir, 'shady-element-links.html'),
       'utf8',
     );
     const fragment = parseFragment(await fixture);

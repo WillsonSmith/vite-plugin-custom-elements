@@ -8,6 +8,7 @@ import path from 'node:path';
 
 export async function generateHydrationScripts(
   dir: string,
+  indexDir: string,
   customElements: Element[],
 ) {
   const scriptSources = new Set<string>();
@@ -22,12 +23,12 @@ export async function generateHydrationScripts(
       });
 
       if (available) {
-        scriptSources.add(available.path.split(dir)[1]);
+        scriptSources.add(path.relative(indexDir, available.path));
       }
     }
   }
 
   return Array.from(scriptSources, (source) => {
-    return createScript({ type: 'module', src: path.join('/', source) });
+    return createScript({ type: 'module', src: source });
   });
 }

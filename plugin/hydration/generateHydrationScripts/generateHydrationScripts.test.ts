@@ -10,14 +10,16 @@ describe('generateHydrationScript', () => {
   it('Creates script tags for hydrated elements from manifest', async () => {
     const hydrate = await generateHydrationScripts(
       path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures'),
+      path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures'),
       [createElement('some-el', { hydrate: '' })],
     );
 
-    expect(getAttribute(hydrate[0], 'src')).toBe('/some-el.ts');
+    expect(getAttribute(hydrate[0], 'src')).toBe('some-el.ts');
   });
 
   it("Doesn't create scripts for elements not marked to hydrate", async () => {
     const hydrate = await generateHydrationScripts(
+      path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures'),
       path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures'),
       [createElement('some-el')],
     );

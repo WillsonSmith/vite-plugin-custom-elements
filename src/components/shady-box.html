@@ -1,7 +1,10 @@
 <template shadowrootmode="open">
   <link rel="stylesheet" href="./shady-box.css" />
   <div class="shady-box">
+    <live-clock></live-clock>
     <p>A box that is within a shadowroot with a link tag.</p>
     <div><slot></slot></div>
   </div>
+
+  <script type="module" src="./shady-box.ts"></script>
 </template>

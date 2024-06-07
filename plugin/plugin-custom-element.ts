@@ -45,8 +45,6 @@ export function pluginCustomElement({
         const projectDir = path.join(cwd, root);
         const indexDir = path.join(cwd, root, path.dirname(indexPath));
 
-        // console.log(indexDir);
-
         const customElements: Element[] = findCustomElements(document);
         const customElementSourceFiles = await findHtmlElementFiles(
           path.join(projectDir, elementDir),

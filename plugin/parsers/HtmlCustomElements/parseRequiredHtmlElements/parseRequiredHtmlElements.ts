@@ -1,5 +1,3 @@
-// import { map } from '@/utility/arrays';
-import { map } from '../../../../utility/arrays';
 import { findCustomElements } from '../../findCustomElements/findCustomElements';
 import { loadAndParseHtmlElement } from '../loadAndParseHtmlElements/loadAndParseHtmlElements';
 import { ParsedHtmlElement } from '../parseHtmlElement/parseHtmlElement';
@@ -50,7 +48,7 @@ function deduplicateParsedList(list: RequiredElement[]) {
     }
   }
 
-  return map(Array.from(collected.entries()), ([tagName, [path, parsed]]) => ({
+  return Array.from(collected.entries(), ([tagName, [path, parsed]]) => ({
     tagName,
     path,
     parsed,

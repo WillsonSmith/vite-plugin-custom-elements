@@ -73,7 +73,7 @@ describe('transformShadowScripts', () => {
     );
 
     const content = getChildNodes(changedScript)[0].value;
-    expect(content).toContain('/tags/test.ts');
+    expect(content).toContain('tags/test.ts');
   });
 
   it('Updates src URLs for shadowroot scripts', () => {
@@ -91,7 +91,7 @@ describe('transformShadowScripts', () => {
 
     const element: RequiredElement = {
       tagName: 'x-tag',
-      path: path.join(process.cwd(), '/tags/tag-name.html'),
+      path: path.join(process.cwd(), 'tags/tag-name.html'),
       parsed: {
         scriptTags: [],
         styleTags: [],
@@ -108,6 +108,6 @@ describe('transformShadowScripts', () => {
     );
 
     const src = getAttribute(changedScript, 'src');
-    expect(src).toBe('/tags/test.ts');
+    expect(src).toBe('tags/test.ts');
   });
 });

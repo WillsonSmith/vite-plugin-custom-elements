@@ -198,3 +198,5 @@ The web platform has recently added support for [Declarative Shadow DOM](https:/
 ```
 
 Note I have excluded the `<script>` tag. As of now, Vite's default HTML building plugin does not traverse `<template>` tags and so it will not transform any linked files within them. This also applies to any `<link>` tags.
+
+Shadow roots encapuslate styles so `<style>` tags within a shadow root template will **not** scope style to a component tag name.

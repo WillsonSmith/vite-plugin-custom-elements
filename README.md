@@ -19,6 +19,15 @@ This is a project I use and intend to continue using, it will evolve an change i
 
 ## Building a project
 
+Try it out
+
+```bash
+git clone https://github.com/WillsonSmith/vite-plugin-custom-elements.git
+cd vite-plugin-custom-elements
+npm i
+npm run dev
+```
+
 What a project looks like:
 
 Also see `/src`

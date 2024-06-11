@@ -1,4 +1,4 @@
-## plugin-custom-elements
+### plugin-custom-elements
 
 ⚠️ prerelease ⚠️
 
@@ -6,8 +6,12 @@ WIPperoni.
 
 `plugin-custom-elements` is a [vite](https://vitejs.dev) plugin designed to simplify building websites with [custom elements](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements).
 
-Guiding Philosophy:
-Build websites the old way. The web provides some pretty poweful tooling, and sometimes all you need is basic html, css, and javascript. This plugin aims to augment the tools provided to make them just a little bit easier to use.
+Philosophy:
+Use the platform and build websites the old way.
+
+The robust set if tools we have today are great and have their place, but sometimes you just need the basics and a little sugar. This plugin aims to minimally augment the tools provided by the platform and make them just a little easier to use.
+
+## Building a project
 
 What a project looks like:
 
@@ -44,9 +48,11 @@ export default defineConfig({
 });
 ```
 
-HTML-based components will automatically replace components used in input HTML files with their defined components. They use `<slot>` elements to determine where to inject content.
+### HTML Components
 
-A basic HTML-based component
+HTML-based componentst live in a directory specified by `elementDir (defaut: componenst)` in the Vite plugin's configuraiton. The markup within these components will replace any usage of those components in your HTML inpust. They use `<slot>` elements to determine how to handle child elements wherever you use them.
+
+#### Example
 
 ```html
 <!-- components/my-component.html -->
@@ -58,7 +64,7 @@ A basic HTML-based component
 <h1 class="header"><slot></slot></h1>
 ```
 
-Index before build
+`index.html` pre-build
 
 ```html
 <!doctype html>
@@ -69,7 +75,7 @@ Index before build
 </html>
 ```
 
-Index after build:
+`index.html` post-build
 
 ```html
 <!doctype html>
@@ -88,7 +94,11 @@ Index after build:
 </html>
 ```
 
-JavaScript components are a little different. The directory they live in does not have to be specified in plugin. Instead, the plugin searches for any custom element definitions and knows where they live.
+### JavaScript Components
+
+JavaScript components require no special directory definition. Instead, the plugin searches your root directory for any custom element definitions and knows where they live.
+
+#### Example
 
 ```typescript
 /*
@@ -111,7 +121,9 @@ In line with the Philosophy of this project: the default behaviour of the plugin
 <my-conter hydrate></my-counter>
 ```
 
-Elements with both HTML and Javascript:
+### Using Both
+
+When you need markup associated with your JavaScript components you can include both an HTML-based component and a JavaScript component.
 
 ```html
 <!-- my-counter.html -->
@@ -150,6 +162,7 @@ customElements.get('my-counter')
 When you use `<my-counter></my-counter>` it will be replaced like an HTML-based component. You can then add your functionality by adding a `hydrate` attribute: `<my-counter hydrate></my-counter>` or including it as a script. You can also include the script within your HTML component.
 
 ```html
+<!-- my-counter.html -->
 <style>
   .my-counter {
     display: flex;

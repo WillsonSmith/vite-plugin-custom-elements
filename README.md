@@ -115,9 +115,15 @@ Elements with both HTML and Javascript:
 
 ```html
 <!-- my-counter.html -->
+<style>
+  .my-counter {
+    display: flex;
+    gap: 1rem;
+  }
+</style>
 <div class="my-counter">
-  <div class="count"></div>
-  <button></button>
+  <div class="count">0</div>
+  <button>Add</button>
 </div>
 ```
 
@@ -127,10 +133,12 @@ Elements with both HTML and Javascript:
  */
 export class MyCounter extends HTMLElement {
   connectedCallback() {
-    this.querySelector('button').addEventListener(
-      'click',
-      () => this.querySelector('count') ...
-    )
+    const button = this.querySelector('button');
+    const count = this.querySelector('.count');
+    button.addEventListener('click', () => {
+      const curr = Number(count.textContent);
+      count.innerHTML = curr + 1;
+    });
   }
 }
 
@@ -139,4 +147,19 @@ customElements.get('my-counter')
   : customElements.define('my-counter', MyCounter);
 ```
 
-When you use `<my-counter></my-counter>` it will be replaced just like an HTML-based component and then your javascript can do whatever.
+When you use `<my-counter></my-counter>` it will be replaced like an HTML-based component. You can then add your functionality by adding a `hydrate` attribute: `<my-counter hydrate></my-counter>` or including it as a script. You can also include the script within your HTML component.
+
+```html
+<style>
+  .my-counter {
+    display: flex;
+    gap: 1rem;
+  }
+</style>
+<div class="my-counter">
+  <div class="count">0</div>
+  <button>Add</button>
+</div>
+
+<script type="module" src="./my-counter.ts"></script>
+```

@@ -1,4 +1,4 @@
-### plugin-custom-elements
+# plugin-custom-elements
 
 ⚠️ prerelease ⚠️
 

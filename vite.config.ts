@@ -9,7 +9,7 @@ const inputs = [
 ].map((input) => [input, input]);
 
 export default defineConfig({
-  root: 'src',
+  root: './example',
   build: {
     outDir: '../dist',
     rollupOptions: {
@@ -27,7 +27,7 @@ export default defineConfig({
   },
   plugins: [
     pluginCustomElement({
-      root: './src',
+      root: './example',
     }),
   ],
 });

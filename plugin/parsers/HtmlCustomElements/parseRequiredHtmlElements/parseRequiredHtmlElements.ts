@@ -1,6 +1,6 @@
-import { findCustomElements } from '../../findCustomElements/findCustomElements';
-import { loadAndParseHtmlElement } from '../loadAndParseHtmlElements/loadAndParseHtmlElements';
-import { ParsedHtmlElement } from '../parseHtmlElement/parseHtmlElement';
+import { findCustomElements } from '../../findCustomElements/findCustomElements.js';
+import { loadAndParseHtmlElement } from '../loadAndParseHtmlElements/loadAndParseHtmlElements.js';
+import { ParsedHtmlElement } from '../parseHtmlElement/parseHtmlElement.js';
 import { Element, getTagName } from '@web/parse5-utils';
 
 // I don't think I should use this elsewhere?

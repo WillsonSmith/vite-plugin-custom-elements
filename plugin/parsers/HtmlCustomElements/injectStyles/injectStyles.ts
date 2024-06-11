@@ -1,5 +1,5 @@
-import { findTag } from '../../../util/parse5';
-import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
+import { findTag } from '../../../util/parse5.js';
+import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements.js';
 import {
   appendChild,
   createElement,
@@ -9,10 +9,11 @@ import {
   getTemplateContent,
   isTextNode,
 } from '@web/parse5-utils';
-import { Document } from 'parse5/dist/tree-adapters/default';
+import type { DefaultTreeAdapterMap } from 'parse5';
 import postcss, { Rule } from 'postcss';
-// @ts-expect-error No type definitions
 import prefixSelector from 'postcss-prefix-selector';
+
+type Document = DefaultTreeAdapterMap['document'];
 
 export async function injectStyles(
   elements: RequiredElement[],

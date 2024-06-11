@@ -1,12 +1,19 @@
 {
-  "type": "module",
+  "name": "plugin-custom-elements",
   "author": "Willson Smith (me@willsonsmith.com)",
+  "version": "0.1.0",
+  "description": "A Vite plugin for building websites with HTML",
   "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "files": "lib/*",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build --emptyOutDir",
+    "build-plugin": "tsc --project tsconfig.plugin.json",
     "test": "vitest",
-    "manifest": "cem analyze"
+    "manifest": "cem analyze",
+    "prepare": "npm run build-plugin"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",

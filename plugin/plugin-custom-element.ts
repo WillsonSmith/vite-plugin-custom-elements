@@ -8,21 +8,21 @@ import path from 'node:path';
 import { parse, serialize } from 'parse5';
 import type { PluginOption } from 'vite';
 
-import { generateHydrationScripts } from './hydration/generateHydrationScripts/generateHydrationScripts';
-import { findCustomElements } from './parsers';
-import { findHtmlElementFiles } from './parsers/HtmlCustomElements/findHtmlElementFiles/findHtmlElementFiles';
-import { transformLinkUrls } from './parsers/HtmlCustomElements/injectLinkTags/injectLinkTags';
+import { generateHydrationScripts } from './hydration/generateHydrationScripts/generateHydrationScripts.js';
+import { findHtmlElementFiles } from './parsers/HtmlCustomElements/findHtmlElementFiles/findHtmlElementFiles.js';
+import { transformLinkUrls } from './parsers/HtmlCustomElements/injectLinkTags/injectLinkTags.js';
 import {
   injectScripts,
   transformShadowScripts,
-} from './parsers/HtmlCustomElements/injectScripts/injectScripts';
-import { injectStyles } from './parsers/HtmlCustomElements/injectStyles/injectStyles';
+} from './parsers/HtmlCustomElements/injectScripts/injectScripts.js';
+import { injectStyles } from './parsers/HtmlCustomElements/injectStyles/injectStyles.js';
 import {
   RequiredElement,
   parseRequiredHtmlElements,
-} from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements';
-import { replaceElementsContent } from './parsers/HtmlCustomElements/replaceElementsContent/replaceElementsContent';
-import { findTag } from './util/parse5';
+} from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements.js';
+import { replaceElementsContent } from './parsers/HtmlCustomElements/replaceElementsContent/replaceElementsContent.js';
+import { findCustomElements } from './parsers/index.js';
+import { findTag } from './util/parse5.js';
 
 const cwd = process.cwd();
 

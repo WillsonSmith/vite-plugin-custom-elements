@@ -1,7 +1,7 @@
 import {
   generateManifest,
   getCustomElementsFromManifest,
-} from '../../manifest';
+} from '../../manifest/index.js';
 import { createScript, getAttribute, getTagName } from '@web/parse5-utils';
 import type { Element } from '@web/parse5-utils';
 import path from 'node:path';

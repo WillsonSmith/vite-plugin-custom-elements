@@ -1,5 +1,5 @@
-import { findTag, replaceNode } from '../../../util/parse5';
-import type { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
+import { findTag, replaceNode } from '../../../util/parse5.js';
+import type { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements.js';
 import {
   type Element,
   appendChild,

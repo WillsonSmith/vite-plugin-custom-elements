@@ -1,6 +1,6 @@
-import { findTag } from '../../../util/parse5';
-import { findCustomElements } from '../../findCustomElements/findCustomElements';
-import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
+import { findTag } from '../../../util/parse5.js';
+import { findCustomElements } from '../../findCustomElements/findCustomElements.js';
+import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements.js';
 import {
   Element,
   appendChild,
@@ -16,7 +16,10 @@ import {
   remove,
 } from '@web/parse5-utils';
 import { parseFragment, serialize } from 'parse5';
-import { Document, DocumentFragment } from 'parse5/dist/tree-adapters/default';
+import type { DefaultTreeAdapterMap } from 'parse5';
+
+type Document = DefaultTreeAdapterMap['document'];
+type DocumentFragment = DefaultTreeAdapterMap['documentFragment'];
 
 export function replaceElementsContent(
   replacers: RequiredElement[],

@@ -1,7 +1,7 @@
 import {
   type ParsedHtmlElement,
   parseHtmlElement,
-} from '../parseHtmlElement/parseHtmlElement';
+} from '../parseHtmlElement/parseHtmlElement.js';
 import { readFile } from 'node:fs/promises';
 import { parseFragment } from 'parse5';
 

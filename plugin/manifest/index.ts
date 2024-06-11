@@ -1,2 +1,2 @@
-export { generateManifest } from './generateManifest/generateManifest';
-export { getCustomElementsFromManifest } from './getCustomElementsFromManifest/getCustomElementsFromManifest';
+export { generateManifest } from './generateManifest/generateManifest.js';
+export { getCustomElementsFromManifest } from './getCustomElementsFromManifest/getCustomElementsFromManifest.js';

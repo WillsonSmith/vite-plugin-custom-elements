@@ -1,4 +1,4 @@
-import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
+import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements.js';
 import {
   createElement,
   findElement,

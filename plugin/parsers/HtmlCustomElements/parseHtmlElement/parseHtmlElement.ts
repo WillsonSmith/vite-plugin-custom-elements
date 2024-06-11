@@ -2,12 +2,13 @@ import {
   findElement,
   findElements,
   getAttribute,
-  getAttributes,
   getTagName,
   getTemplateContent,
   remove,
 } from '@web/parse5-utils';
-import { DocumentFragment } from 'parse5/dist/tree-adapters/default';
+import type { DefaultTreeAdapterMap } from 'parse5';
+
+type DocumentFragment = DefaultTreeAdapterMap['documentFragment'];
 
 export type ParsedHtmlElement = {
   content: DocumentFragment;

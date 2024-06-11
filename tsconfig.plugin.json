@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "outDir": "lib",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "declaration": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "./plugin/**/*"
+  ],
+  "exclude": [
+    "./plugin/**/*.test.ts"
+  ]
+}

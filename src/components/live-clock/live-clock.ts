@@ -1,4 +1,4 @@
-import { autoBind } from '@/utility/autobind';
+import { autoBind } from '../../util/autobind.js';
 
 /**
  * Display the current time.
@@ -14,7 +14,7 @@ export class LiveClock extends HTMLElement {
     autoBind(this);
   }
 
-  get container() {
+  get container(): HTMLElement | null {
     if (!this._container) {
       this._container = this.querySelector('.time');
     }

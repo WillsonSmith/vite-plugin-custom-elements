@@ -2,7 +2,7 @@ import { glob } from 'glob';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 
-import { pluginCustomElement } from './plugin/plugin-custom-element';
+import { pluginCustomElement } from './plugin/plugin-custom-element.js';
 
 const inputs = [
   ...(await glob('src/**/*.html', { ignore: 'src/components/**' })),

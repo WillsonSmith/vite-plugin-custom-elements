@@ -176,3 +176,23 @@ When you use `<my-counter></my-counter>` it will be replaced like an HTML-based 
 
 <script type="module" src="./my-counter.ts"></script>
 ```
+
+### Templates and Shadow Roots
+
+The web platform has recently added support for [Declarative Shadow DOM](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM#declaratively_with_html), you can take advantage of this in your components by wrapping any component content with a `<template shadowrootmode="open"></template>`
+
+```html
+<!-- my-counter.html -->
+<style>
+  .my-counter {
+    display: flex;
+    gap: 1rem;
+  }
+</style>
+<div class="my-counter">
+  <div class="count">0</div>
+  <button>Add</button>
+</div>
+```
+
+Note I have excluded the `<script>` tag. As of now, Vite's default HTML building plugin does not traverse `<template>` tags and so it will not transform any linked files within them. This also applies to any `<link>` tags.

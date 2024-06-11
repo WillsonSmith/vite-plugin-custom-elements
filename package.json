@@ -1,12 +1,14 @@
 {
   "name": "plugin-custom-elements",
   "author": "Willson Smith (me@willsonsmith.com)",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A Vite plugin for building websites with HTML",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
-  "files": "lib/*",
+  "files": [
+    "lib/*"
+  ],
   "scripts": {
     "dev": "vite --host",
     "build": "vite build --emptyOutDir",

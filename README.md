@@ -183,16 +183,18 @@ The web platform has recently added support for [Declarative Shadow DOM](https:/
 
 ```html
 <!-- my-counter.html -->
-<style>
-  .my-counter {
-    display: flex;
-    gap: 1rem;
-  }
-</style>
-<div class="my-counter">
-  <div class="count">0</div>
-  <button>Add</button>
-</div>
+<template shadowrootmode="open">
+  <style>
+    .my-counter {
+      display: flex;
+      gap: 1rem;
+    }
+  </style>
+  <div class="my-counter">
+    <div class="count">0</div>
+    <button>Add</button>
+  </div>
+</template>
 ```
 
 Note I have excluded the `<script>` tag. As of now, Vite's default HTML building plugin does not traverse `<template>` tags and so it will not transform any linked files within them. This also applies to any `<link>` tags.

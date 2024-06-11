@@ -2,8 +2,6 @@
 
 ⚠️ prerelease ⚠️
 
-WIPperoni.
-
 `plugin-custom-elements` is a [vite](https://vitejs.dev) plugin designed to simplify building websites with [custom elements](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements).
 
 Philosophy:
@@ -11,9 +9,19 @@ Use the platform and build websites the old way.
 
 The robust set if tools we have today are great and have their place, but sometimes you just need the basics and a little sugar. This plugin aims to minimally augment the tools provided by the platform and make them just a little easier to use.
 
+## WIP
+
+This plugin is in its infancy and is bound to have issues.
+
+Pre-1.0, patch changes should be safe, but minor version bumps may introduce breaking changes.
+
+This is a project I use and intend to continue using, it will evolve an change in bursts, but I intend to keep it inline with the general philosophical principles.
+
 ## Building a project
 
 What a project looks like:
+
+Also see `/src`
 
 ```
 src/
@@ -200,3 +208,7 @@ The web platform has recently added support for [Declarative Shadow DOM](https:/
 Note I have excluded the `<script>` tag. As of now, Vite's default HTML building plugin does not traverse `<template>` tags and so it will not transform any linked files within them. This also applies to any `<link>` tags.
 
 Shadow roots encapuslate styles so `<style>` tags within a shadow root template will **not** scope style to a component tag name.
+
+### Nesting components
+
+Components can exist within each other. A component's styles will be injected as a `<style>` tag within a shadow root.

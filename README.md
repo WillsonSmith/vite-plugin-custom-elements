@@ -2,10 +2,12 @@
 
 ⚠️ prerelease ⚠️
 
+WIPperoni.
+
 `plugin-custom-elements` is a [vite](https://vitejs.dev) plugin designed to simplify building websites with [custom elements](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements).
 
 Guiding Philosophy:
-This plugin is designed to be a minor extension to building websites with html, css, and javascript. It provides tooling to make it easy to work with custom elements with minimal opinion on how you build your components.
+Build websites the old way. The web provides some pretty poweful tooling, and sometimes all you need is basic html, css, and javascript. This plugin aims to augment the tools provided to make them just a little bit easier to use.
 
 What a project looks like:
 
@@ -92,7 +94,7 @@ JavaScript components are a little different. The directory they live in does no
 /*
  * @element my-counter
  */
-export class MyCounter extends HTML {}
+export class MyCounter extends HTMLElement {}
 customElements.get('my-counter')
   ? undefined
   : customElements.define('my-counter', MyCounter);
@@ -108,3 +110,33 @@ In line with the Philosophy of this project: the default behaviour of the plugin
 ```html
 <my-conter hydrate></my-counter>
 ```
+
+Elements with both HTML and Javascript:
+
+```html
+<!-- my-counter.html -->
+<div class="my-counter">
+  <div class="count"></div>
+  <button></button>
+</div>
+```
+
+```typescript
+/*
+ * @element my-counter
+ */
+export class MyCounter extends HTMLElement {
+  connectedCallback() {
+    this.querySelector('button').addEventListener(
+      'click',
+      () => this.querySelector('count') ...
+    )
+  }
+}
+
+customElements.get('my-counter')
+  ? undefined
+  : customElements.define('my-counter', MyCounter);
+```
+
+When you use `<my-counter></my-counter>` it will be replaced just like an HTML-based component and then your javascript can do whatever.

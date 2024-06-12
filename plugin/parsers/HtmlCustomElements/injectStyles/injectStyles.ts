@@ -5,6 +5,7 @@ import {
   createElement,
   findElement,
   findElements,
+  getAttribute,
   getChildNodes,
   getTemplateContent,
   isTextNode,
@@ -59,12 +60,15 @@ export async function injectStyles(
         }).length > 0
       );
     });
+
     await injectStyles(templateElements, getTemplateContent(template));
   }
 
   const appendTo = findElement(root, findTag('head')) || root;
-
-  appendChild(appendTo, styleTag);
+  const styleContent = styleTag.childNodes[0]?.value;
+  if (styleContent.length > 0) {
+    appendChild(appendTo, styleTag);
+  }
 }
 
 type TransformOptions = [string, string, string, string, Rule];

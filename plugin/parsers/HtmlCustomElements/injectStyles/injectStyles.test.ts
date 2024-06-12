@@ -1,4 +1,4 @@
-import { findTag } from '../../../util/parse5';
+import { findTag } from '../../../util/parse5.js';
 import {
   appendChild,
   createElement,
@@ -6,10 +6,10 @@ import {
   findElements,
   getChildNodes,
 } from '@web/parse5-utils';
-import { parse, parseFragment, serialize } from 'parse5';
+import { parse, parseFragment } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
-import { injectStyles } from './injectStyles';
+import { injectStyles } from './injectStyles.js';
 
 const DOCUMENT_TEMPLATE = `
       <!doctype html>
@@ -49,6 +49,15 @@ describe('injectStyles', () => {
     const head = findElement(document, findTag('head'));
     const styles = findElements(head, findTag('style'));
     expect(styles.length).toBe(1);
+  });
+
+  it('Does NOT inject empty style tags', async () => {
+    const document = parse(DOCUMENT_TEMPLATE);
+    const elements = createParsedElements({});
+
+    await injectStyles(elements, document);
+    const styles = findElement(document, findTag('style'));
+    expect(styles).toBeNull();
   });
 
   it('ONLY injects NESTED ELEMENT styles into shadowroots', async () => {

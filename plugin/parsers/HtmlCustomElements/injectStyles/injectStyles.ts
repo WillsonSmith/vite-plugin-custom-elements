@@ -5,7 +5,6 @@ import {
   createElement,
   findElement,
   findElements,
-  getAttribute,
   getChildNodes,
   getTemplateContent,
   isTextNode,

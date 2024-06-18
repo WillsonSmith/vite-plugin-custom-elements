@@ -2,7 +2,10 @@ import { glob } from 'glob';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 
-import { pluginCustomElement } from './plugin/plugin-custom-element.js';
+import {
+  pluginCustomElement,
+  pluginCustomElement2,
+} from './plugin/plugin-custom-element.js';
 
 const inputs = [
   ...(await glob('example/**/*.html', { ignore: 'example/components/**' })),
@@ -26,8 +29,12 @@ export default defineConfig({
     root: './',
   },
   plugins: [
-    pluginCustomElement({
+    pluginCustomElement2({
       root: './example',
+      elementsDir: 'components',
     }),
+    // pluginCustomElement({
+    //   root: './example',
+    // }),
   ],
 });

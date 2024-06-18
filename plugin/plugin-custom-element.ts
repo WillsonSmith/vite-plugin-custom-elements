@@ -6,7 +6,7 @@ import {
 } from '@web/parse5-utils';
 import path from 'node:path';
 import { parse, serialize } from 'parse5';
-import type { PluginOption } from 'vite';
+import type { Plugin, PluginOption } from 'vite';
 
 import { generateHydrationScripts } from './hydration/generateHydrationScripts/generateHydrationScripts.js';
 import { findHtmlElementFiles } from './parsers/HtmlCustomElements/findHtmlElementFiles/findHtmlElementFiles.js';
@@ -30,6 +30,27 @@ type PluginCustomElementOptions = {
   root?: string;
   elementDir?: string;
 };
+
+type PluginCustomElementOptions2 = {
+  root: string;
+  elementsDir: string;
+};
+
+export function pluginCustomElement2({
+  root = './',
+  elementsDir = 'custom-elements',
+}: PluginCustomElementOptions2): Plugin {
+  return {
+    name: 'plugin-custom-elements',
+    transformIndexHtml: {
+      order: 'pre',
+      handler: async (context: string, { path: indexPath }) => {
+        console.log(context, indexPath);
+      },
+    },
+  };
+}
+
 export function pluginCustomElement({
   root = './',
   elementDir = 'components',

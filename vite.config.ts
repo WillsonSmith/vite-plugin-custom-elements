@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 import { pluginCustomElement } from './plugin/plugin-custom-element.js';
 
 const inputs = [
-  ...(await glob('src/**/*.html', { ignore: 'src/components/**' })),
+  ...(await glob('example/**/*.html', { ignore: 'example/components/**' })),
 ].map((input) => [input, input]);
 
 export default defineConfig({

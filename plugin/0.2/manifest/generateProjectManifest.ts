@@ -1,15 +1,19 @@
+import { getCustomElementsFromManifest } from '../../manifest/getCustomElementsFromManifest/getCustomElementsFromManifest.js';
 import { create } from '@custom-elements-manifest/analyzer';
 import { glob } from 'glob';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import ts from 'typescript';
 
-import { getCustomElementsFromManifest } from '@/plugin/manifest/index.js';
-
 type ProjectManifest = {
   elements: { fileName: string; tagName: string; type: 'ts' | 'html' }[];
 };
 
+/**
+ * Creates a ProjectManifest of all custom element types.
+ *
+ * A ProjectManifest is a list of `.html`, `.ts`, and `.js` that match the plugin's custom element definition pattern.
+ */
 export async function generateProjectManifest(
   directories: string[],
 ): Promise<ProjectManifest> {

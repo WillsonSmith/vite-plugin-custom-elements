@@ -8,6 +8,7 @@ import path from 'node:path';
 import { parse, serialize } from 'parse5';
 import type { Plugin, PluginOption } from 'vite';
 
+import { generateProjectManifest } from './0.2/manifest/generateProjectManifest.js';
 import { generateHydrationScripts } from './hydration/generateHydrationScripts/generateHydrationScripts.js';
 import { findHtmlElementFiles } from './parsers/HtmlCustomElements/findHtmlElementFiles/findHtmlElementFiles.js';
 import { transformLinkUrls } from './parsers/HtmlCustomElements/injectLinkTags/injectLinkTags.js';
@@ -45,7 +46,11 @@ export function pluginCustomElement2({
     transformIndexHtml: {
       order: 'pre',
       handler: async (context: string, { path: indexPath }) => {
-        console.log(context, indexPath);
+        const projectDir = path.join(cwd, root);
+        const projectManifest = await generateProjectManifest([
+          path.join(projectDir, elementsDir),
+        ]);
+        console.log(projectManifest);
       },
     },
   };

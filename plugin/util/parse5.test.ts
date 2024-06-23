@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createTextNode,
   findTag,
-  serializeWithStringifiedTags,
+  serializeRawStringsForTag,
 } from './parse5.js';
 
 describe('serializeWithStringifiedTags', () => {
@@ -23,7 +23,7 @@ describe('serializeWithStringifiedTags', () => {
       appendChild(head, tag);
     }
 
-    const result = serializeWithStringifiedTags(doc, 'style');
+    const result = serializeRawStringsForTag(doc, 'style');
     expect(result).toContain('&.test2');
   });
 });

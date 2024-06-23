@@ -20,7 +20,7 @@ export function replaceNode(target: Element, replacer: Element): void {
   remove(target);
 }
 
-export function serializeWithStringifiedTags(parent: Node, tagName: string) {
+export function serializeRawStringsForTag(parent: Node, tagName: string) {
   const elementContents = [];
   const elements = findElements(parent, (element) => {
     if (element.nodeName === tagName) {

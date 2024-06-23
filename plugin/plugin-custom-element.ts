@@ -22,7 +22,7 @@ import {
 } from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements.js';
 import { replaceElementsContent } from './parsers/HtmlCustomElements/replaceElementsContent/replaceElementsContent.js';
 import { findCustomElements } from './parsers/index.js';
-import { findTag, serializeWithStringifiedTags } from './util/parse5.js';
+import { findTag, serializeRawStringsForTag } from './util/parse5.js';
 
 const cwd = process.cwd();
 
@@ -75,7 +75,7 @@ export function pluginCustomElement({
           appendChild(body, script);
         }
 
-        return serializeWithStringifiedTags(document, 'style');
+        return serializeRawStringsForTag(document, 'style');
       },
     },
   } as PluginOption;

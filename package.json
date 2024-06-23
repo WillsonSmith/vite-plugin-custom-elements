@@ -1,7 +1,7 @@
 {
   "name": "plugin-custom-elements",
   "author": "Willson Smith (me@willsonsmith.com)",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A Vite plugin for building websites with HTML",
   "license": "MIT",
   "homepage": "https://github.com/WillsonSmith/vite-plugin-custom-elements",

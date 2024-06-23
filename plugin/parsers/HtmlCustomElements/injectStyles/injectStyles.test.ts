@@ -128,7 +128,9 @@ describe('injectStyles', () => {
     appendChild(document, component);
 
     const elements = createParsedElements({
-      styleTag: createStyle('.my-selector { a { color: black; } }'),
+      styleTag: createStyle(
+        '.my-selector { .selector-two { a { color: black; } } }',
+      ),
     });
     await injectStyles(elements, document);
 

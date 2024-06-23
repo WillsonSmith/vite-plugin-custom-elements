@@ -84,16 +84,13 @@ async function scopeStyleToElement(tagName: string, cssText: string) {
 
 function handleTransform(...options: TransformOptions) {
   const [prefix, selector, prefixedSelector, , rule] = options;
+
   if (selector.startsWith(':host')) return prefix;
   if (selector.startsWith('body') || selector.startsWith('html')) {
     return selector;
   }
 
-  if (
-    rule.parent && 'selector' in rule.parent
-      ? (rule.parent.selector as string).includes(prefix)
-      : false
-  ) {
+  if (rule.parent?.type === 'rule') {
     return selector;
   }
 

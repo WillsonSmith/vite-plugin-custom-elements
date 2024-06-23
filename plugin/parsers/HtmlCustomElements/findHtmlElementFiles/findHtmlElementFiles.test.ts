@@ -2,7 +2,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-import { findHtmlElementFiles } from './findHtmlElementFiles';
+import { findHtmlElementFiles } from './findHtmlElementFiles.js';
 
 const fixtureDir = fileURLToPath(
   join(dirname(import.meta.url), '..', 'fixtures'),

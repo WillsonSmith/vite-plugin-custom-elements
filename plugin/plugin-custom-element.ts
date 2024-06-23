@@ -5,7 +5,7 @@ import {
   getAttribute,
 } from '@web/parse5-utils';
 import path from 'node:path';
-import { parse, serialize } from 'parse5';
+import { parse } from 'parse5';
 import type { PluginOption } from 'vite';
 
 import { generateHydrationScripts } from './hydration/generateHydrationScripts/generateHydrationScripts.js';
@@ -22,7 +22,7 @@ import {
 } from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements.js';
 import { replaceElementsContent } from './parsers/HtmlCustomElements/replaceElementsContent/replaceElementsContent.js';
 import { findCustomElements } from './parsers/index.js';
-import { findTag } from './util/parse5.js';
+import { findTag, serializeRawStringsForTag } from './util/parse5.js';
 
 const cwd = process.cwd();
 
@@ -75,7 +75,7 @@ export function pluginCustomElement({
           appendChild(body, script);
         }
 
-        return serialize(document);
+        return serializeRawStringsForTag(document, 'style');
       },
     },
   } as PluginOption;

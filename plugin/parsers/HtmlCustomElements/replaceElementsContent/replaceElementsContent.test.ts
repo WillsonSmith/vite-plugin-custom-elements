@@ -1,5 +1,5 @@
-import { findTag } from '../../../util/parse5';
-import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
+import { findTag } from '../../../util/parse5.js';
+import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements.js';
 import {
   Element,
   appendChild,
@@ -15,7 +15,7 @@ import {
 import { parseFragment } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
-import { replaceElementsContent } from './replaceElementsContent';
+import { replaceElementsContent } from './replaceElementsContent.js';
 
 describe('replaceElementsContent', () => {
   it('Replaces custom element content', async () => {

@@ -1,0 +1,29 @@
+<style>
+  button {
+    --bg: #ececec;
+    --bc: #000;
+    --br: 3px;
+    --pb: calc(1rem / 4);
+    --pi: calc(1rem / 3);
+
+    background: var(--bg);
+    border: 1px solid var(--bc);
+    border-radius: var(--br);
+    cursor: pointer;
+
+    padding-block: var(--pb);
+    padding-inline: var(--pi);
+
+    font-size: inherit;
+  }
+
+  :host {
+    &[primary] button {
+      --bg: lightgreen;
+    }
+  }
+</style>
+
+<button>
+  <slot></slot>
+</button>

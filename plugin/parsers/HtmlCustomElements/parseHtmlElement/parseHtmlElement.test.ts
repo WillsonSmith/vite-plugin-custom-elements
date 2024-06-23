@@ -10,14 +10,14 @@ import { fileURLToPath } from 'node:url';
 import { parseFragment } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
-import { parseHtmlElement } from './parseHtmlElement';
+import { parseHtmlElement } from './parseHtmlElement.js';
 
 const fixtureDir = fileURLToPath(
   join(dirname(import.meta.url), '..', 'fixtures'),
 );
 
 describe('parseHtmlElement', () => {
-  it('Parses element content', async () => {});
+  it('Parses element content', async () => { });
 
   it('Extracts <style> tags', async () => {
     const fragment = createDocumentFragment();

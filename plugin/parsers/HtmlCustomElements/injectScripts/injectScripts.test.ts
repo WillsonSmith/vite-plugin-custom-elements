@@ -1,4 +1,4 @@
-import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
+import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements.js';
 import {
   createDocument,
   createElement,
@@ -12,8 +12,8 @@ import path from 'node:path';
 import { parseFragment } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
-import { injectScripts, transformShadowScripts } from './injectScripts';
-import { findTag } from '@/plugin/util/parse5';
+import { injectScripts, transformShadowScripts } from './injectScripts.js';
+import { findTag } from '@/plugin/util/parse5.js';
 
 describe('injectScripts', () => {
   it('Injects scripts from a RequiredElement list into the DOM', async () => {

@@ -1,4 +1,4 @@
-import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements';
+import { RequiredElement } from '../parseRequiredHtmlElements/parseRequiredHtmlElements.js';
 import {
   appendChild,
   createDocument,
@@ -10,7 +10,7 @@ import path from 'node:path';
 import { parseFragment } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
-import { transformLinkUrls } from './injectLinkTags';
+import { transformLinkUrls } from './injectLinkTags.js';
 
 describe('transformLinkUrls', () => {
   it('Does NOT transforms link URLs if light DOM', async () => {
@@ -89,17 +89,3 @@ describe('transformLinkUrls', () => {
     expect(href).toContain('tags/x-component.css');
   });
 });
-
-function newDoc(content: string): string {
-  return createDocument(
-    `
-    <!doctype html>
-      <html>
-        <head></head>
-        <body>
-          ${content || ''}
-        </body>
-      </html>
-      `,
-  );
-}

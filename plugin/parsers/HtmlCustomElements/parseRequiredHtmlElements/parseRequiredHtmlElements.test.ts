@@ -1,9 +1,8 @@
-import { fixtureDir } from '../test-helpers';
+import { fixtureDir } from '../test-helpers.js';
 import { createElement } from '@web/parse5-utils';
 import { describe, expect, it } from 'vitest';
 
-import { parseRequiredHtmlElements } from './parseRequiredHtmlElements';
-import { map } from '@/utility/arrays';
+import { parseRequiredHtmlElements } from './parseRequiredHtmlElements.js';
 
 describe('parseRequiredHtmlElements', () => {
   it('Parses provided elements', async () => {
@@ -18,8 +17,7 @@ describe('parseRequiredHtmlElements', () => {
 
   it('Parses nested elements', async () => {
     const customElements = [createElement('element-with-nested')];
-    const sourceFiles = map(
-      ['my-element.html', 'element-with-nested.html'],
+    const sourceFiles = ['my-element.html', 'element-with-nested.html'].map(
       fixtureDir,
     );
 

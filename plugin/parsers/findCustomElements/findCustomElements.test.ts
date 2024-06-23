@@ -2,7 +2,7 @@ import { appendChild, createElement, getTagName } from '@web/parse5-utils';
 import { parse, parseFragment } from 'parse5';
 import { describe, expect, it } from 'vitest';
 
-import { findCustomElements, reservedElements } from './findCustomElements';
+import { findCustomElements, reservedElements } from './findCustomElements.js';
 
 describe('findCustomElements', () => {
   it('Finds elements in a Document', () => {

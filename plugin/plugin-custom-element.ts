@@ -1,15 +1,11 @@
 import {
   Element,
-  Node,
   appendChild,
   findElement,
-  findElements,
   getAttribute,
-  getChildNodes,
-  remove,
 } from '@web/parse5-utils';
 import path from 'node:path';
-import { parse, serialize } from 'parse5';
+import { parse } from 'parse5';
 import type { PluginOption } from 'vite';
 
 import { generateHydrationScripts } from './hydration/generateHydrationScripts/generateHydrationScripts.js';
@@ -26,7 +22,7 @@ import {
 } from './parsers/HtmlCustomElements/parseRequiredHtmlElements/parseRequiredHtmlElements.js';
 import { replaceElementsContent } from './parsers/HtmlCustomElements/replaceElementsContent/replaceElementsContent.js';
 import { findCustomElements } from './parsers/index.js';
-import { findTag, replaceNode } from './util/parse5.js';
+import { findTag, serializeWithStringifiedTags } from './util/parse5.js';
 
 const cwd = process.cwd();
 
@@ -79,41 +75,7 @@ export function pluginCustomElement({
           appendChild(body, script);
         }
 
-        let styleContents = [];
-        const styleElements = findElements(document, (element) => {
-          if (element.nodeName === 'style') {
-            return true;
-          }
-          return false;
-        });
-
-        for (const style of styleElements) {
-          const children = getChildNodes(style);
-          const content = children
-            .map((child: Node) => {
-              return child.value;
-            })
-            .join('\n');
-          styleContents.push(content);
-          const index = styleContents.indexOf(content);
-
-          style.childNodes = [createTextNode(`{{replaceStyle[${index}]}}`)];
-
-          // replaceNode(style, createTextNode('<!--style[]-->'));
-
-          // remove(style);
-        }
-
-        let serialized = serialize(document);
-
-        for (let i = 0; i < styleContents.length; i++) {
-          serialized = serialized.replace(
-            `{{replaceStyle[${i}]}}`,
-            styleContents[i],
-          );
-        }
-
-        return serialized;
+        return serializeWithStringifiedTags(document, 'style');
       },
     },
   } as PluginOption;
@@ -134,14 +96,4 @@ function processShadowedItems(rootDir: string, elements: RequiredElement[]) {
       transformShadowScripts(template, element, rootDir);
     }
   }
-}
-
-function createTextNode(text: string) {
-  return {
-    nodeName: '#text',
-    value: text,
-    parentNode: null,
-    attrs: [],
-    __location: undefined,
-  };
 }

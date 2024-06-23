@@ -1,0 +1,31 @@
+<style>
+  :host {
+    &[title] .text {
+      font-size: 2rem;
+    }
+
+    .something {
+      .text {
+        color: green;
+      }
+    }
+
+    &[title] {
+      .text {
+        font-weight: 600;
+      }
+    }
+  }
+
+  .something {
+    .something-else {
+      color: red;
+
+      .something-blue {
+        color: blue;
+      }
+    }
+  }
+</style>
+
+<span class="text"><slot></slot></span>
